@@ -86,45 +86,50 @@ contract FlashLoan {
     }
 
     function fund (int channel_id, address caller , int256 amount) public {
+
+        Channel memory channel = channels[channel_id];
+
         // Check if channel exists
-        require(channels[channel_id].state.channel_id == channel_id, "Channel does not exist");
+        require(channel.state.channel_id == channel_id, "Channel does not exist");
 
         // Check if channel is not finalized
-        require(channels[channel_id].state.finalized_a == false && channels[channel_id].state.finalized_b == false, "Channel is finalized");
+        require(channel.state.finalized_a == false && channel.state.finalized_b == false, "Channel is finalized");
 
         // Check if caller is participant_a or participant_b
-        if (caller == channels[channel_id].params.participant_a.addresse){
+        if (caller == channel.params.participant_a.addresse){
             // Check if participant_a is not funded
-            require(channels[channel_id].control.funded_a == false, "Participant A already funded");
+            require(channel.control.funded_a == false, "Participant A already funded");
 
             // Update balance_A
-            channels[channel_id].state.balance_A += amount;
+            channel.state.balance_A += amount;
 
             // Update funded_a
-            channels[channel_id].control.funded_a = true;
+            channel.control.funded_a = true;
 
             // Update balance of participant_a
-            channels[channel_id].state.balance_A += amount;
+            channel.state.balance_A = amount;
         }
-        else if (caller == channels[channel_id].params.participant_b.addresse){
+        else if (caller == channel.params.participant_b.addresse){
             // Check if participant_b is not funded
-            require(channels[channel_id].control.funded_b == false, "Participant B already funded");
+            require(channel.control.funded_b == false, "Participant B already funded");
 
             // Update balance_B
-            channels[channel_id].state.balance_B += amount;
+            channel.state.balance_B += amount;
 
             // Update funded_b
-            channels[channel_id].control.funded_b = true;
+            channel.control.funded_b = true;
 
             // Update balance of participant_b
-            channels[channel_id].state.balance_B += amount;
+            channel.state.balance_B = amount;
         }
         else{
             revert("Caller is not a participant");
         }
 
         // Update Contract_Balance
-        updateContractBalance(amount);
+        if(channel.control.funded_a == true && channel.control.funded_b == true){
+            updateContractBalance(channel_id);
+        }
     }
     
 
@@ -132,9 +137,8 @@ contract FlashLoan {
     // FlashLoan
 
     // Update Contract_Balance with the amount
-    function updateContractBalance(int256 amount) public returns (bool) {
-        Contract_Balance += amount;
-        return true;
+    function updateContractBalance(int channel_id) public returns (bool) {
+        Contract_Balance += channels[channel_id].state.balance_A + channels[channel_id].state.balance_B;
     }
      
     function flashLoan(
