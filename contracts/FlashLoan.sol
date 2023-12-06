@@ -20,7 +20,6 @@ struct Participant {
 
 struct Channel_State {
     int channel_id;
-    int balance;
     int balance_A;
     int balance_B;
     int version_num;
@@ -48,28 +47,57 @@ contract FlashLoan {
     // Variables
     uint256 public Contract_Balance = 0 ether;
 
-    // 
+    Participant[] public participants;
+    Channel[] public channels;
+    int256 public channel_count = 0;
+    
+
+    // Mapping: Channel_ID => Balance
     mapping(int => uint256) public balances;
 
     // Channel
+
+    function open(Channel_Params calldata params) public{
+        // Create new Channel
+        Channel memory channel;
+        channel.state.channel_id = channel_count;
+        channel.state.balance_A = 0;
+        channel.state.balance_B = 0;
+        channel.state.version_num = 0;
+        channel.state.finalized_a = false;
+        channel.state.finalized_b = false;
+        channel.params = params;
+        channel.control.funded_a = false;
+        channel.control.funded_b = false;
+
+        // Add Channel to channels
+        channels.push(channel);
+
+        // Add Participants to participants
+        participants.push(params.participant_a);
+        participants.push(params.participant_b);
+
+        // Update channel_count
+        channel_count += 1;
+    }
 
 
     // FlashLoan
 
     // Update Contract_Balance with the amount of ETH in every channel
     function updateContractBalance() public returns (bool) {
-        // Your code here
+        Contract_Balance = 0;
+        for(int i = 0; i < channel_count; i++){
+            Contract_Balance += balances[i];
+        }
         return true;
     }
      
-     
-
-
     function flashLoan(
     FlashBorrower receiver,
     uint256 amount,
     bytes calldata data) external returns (bool) {
-    
+        
 
         return true;
     }
