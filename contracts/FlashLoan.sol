@@ -6,8 +6,8 @@ pragma solidity ^0.8.0;
 interface FlashBorrower {
     function onFlashLoan(
         address initiator,
-        uint256 amount,
-        uint256 fee,
+        int256 amount,
+        int256 fee,
         bytes calldata data
     ) external returns (bytes32);
 }
@@ -55,7 +55,8 @@ contract FlashLoan {
     mapping(int => Channel) public channels;
 
     // Mapping: Channel_ID => Balance
-    mapping(int => uint256) public balances;
+    mapping(int => int256) public balances;
+
 
     // Channel
 
@@ -93,16 +94,30 @@ contract FlashLoan {
 
         // Check if caller is participant_a or participant_b
         if (caller == channels[channel_id].params.participant_a.addresse){
+            // Check if participant_a is not funded
+            require(channels[channel_id].control.funded_a == false, "Participant A already funded");
+
             // Update balance_A
             channels[channel_id].state.balance_A += amount;
+
             // Update funded_a
             channels[channel_id].control.funded_a = true;
+
+            // Update balance of participant_a
+            channels[channel_id].state.balance_A += amount;
         }
         else if (caller == channels[channel_id].params.participant_b.addresse){
+            // Check if participant_b is not funded
+            require(channels[channel_id].control.funded_b == false, "Participant B already funded");
+
             // Update balance_B
             channels[channel_id].state.balance_B += amount;
+
             // Update funded_b
             channels[channel_id].control.funded_b = true;
+
+            // Update balance of participant_b
+            channels[channel_id].state.balance_B += amount;
         }
         else{
             revert("Caller is not a participant");
