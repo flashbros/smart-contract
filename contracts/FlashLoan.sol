@@ -84,12 +84,9 @@ contract FlashLoan {
 
     // FlashLoan
 
-    // Update Contract_Balance with the amount of ETH in every channel
-    function updateContractBalance() public returns (bool) {
-        Contract_Balance = 0;
-        for(int i = 0; i < channel_count; i++){
-            Contract_Balance += balances[i];
-        }
+    // Update Contract_Balance with the amount
+    function updateContractBalance(uint256 amount) public returns (bool) {
+        Contract_Balance += amount;
         return true;
     }
      
