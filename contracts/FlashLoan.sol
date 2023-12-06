@@ -137,7 +137,7 @@ contract FlashLoan {
     // FlashLoan
 
     // Update Contract_Balance with the amount
-    function updateContractBalance(int channel_id) public returns (bool) {
+    function updateContractBalance(int channel_id) public {
         Contract_Balance += channels[channel_id].state.balance_A + channels[channel_id].state.balance_B;
     }
      
