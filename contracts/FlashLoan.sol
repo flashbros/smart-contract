@@ -57,7 +57,6 @@ contract FlashLoan {
     // Mapping: Channel_ID => Balance
     mapping(int => int256) public balances;
 
-
     // Channel
 
     // Open Channel
@@ -130,6 +129,24 @@ contract FlashLoan {
         if(channel.control.funded_a == true && channel.control.funded_b == true){
             updateContractBalance(channel_id);
         }
+    }
+
+    function pay(int channel_id, address caller, int256 amount) public {
+        //Bool to know who is the caller
+        bool callerIsA=false;
+        
+        //Check if Channel exists
+        require(channels[channel_id].state.channel_id == payChannel.state.channel_id, "Channel does not exist");
+
+        //Check if Caller is part of the given Channel
+        require(channels[channel_id].params.participant_a == caller || channels[channel_id].params.participant_b == caller, "Caller is not part of the given Channel");
+
+        //
+        if(channels[channel_id].params.participant_b == caller) callerIsA=true;
+            //TODO rausfinden welcher 
+
+        
+
     }
     
       // Update Contract_Balance with the amount
