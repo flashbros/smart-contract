@@ -45,18 +45,21 @@ struct Channel{
 
 contract FlashLoan {
     // Variables
-    uint256 public Contract_Balance = 0 ether;
+    int256 public Contract_Balance = 0 ether;
 
     Participant[] public participants;
-    Channel[] public channels;
+    
     int256 public channel_count = 0;
     
+    // Mapping: Channel_ID => Channel
+    mapping(int => Channel) public channels;
 
     // Mapping: Channel_ID => Balance
     mapping(int => uint256) public balances;
 
     // Channel
 
+    // Open Channel
     function open(Channel_Params calldata params) public{
         // Create new Channel
         Channel memory channel;
@@ -71,7 +74,7 @@ contract FlashLoan {
         channel.control.funded_b = false;
 
         // Add Channel to channels
-        channels.push(channel);
+        channels[channel_count] = channel;
 
         // Add Participants to participants
         participants.push(params.participant_a);
@@ -81,11 +84,40 @@ contract FlashLoan {
         channel_count += 1;
     }
 
+    function fund (int channel_id, address caller , int256 amount) public {
+        // Check if channel exists
+        require(channels[channel_id].state.channel_id == channel_id, "Channel does not exist");
+
+        // Check if channel is not finalized
+        require(channels[channel_id].state.finalized_a == false && channels[channel_id].state.finalized_b == false, "Channel is finalized");
+
+        // Check if caller is participant_a or participant_b
+        if (caller == channels[channel_id].params.participant_a.addresse){
+            // Update balance_A
+            channels[channel_id].state.balance_A += amount;
+            // Update funded_a
+            channels[channel_id].control.funded_a = true;
+        }
+        else if (caller == channels[channel_id].params.participant_b.addresse){
+            // Update balance_B
+            channels[channel_id].state.balance_B += amount;
+            // Update funded_b
+            channels[channel_id].control.funded_b = true;
+        }
+        else{
+            revert("Caller is not a participant");
+        }
+
+        // Update Contract_Balance
+        updateContractBalance(amount);
+    }
+    
+
 
     // FlashLoan
 
     // Update Contract_Balance with the amount
-    function updateContractBalance(uint256 amount) public returns (bool) {
+    function updateContractBalance(int256 amount) public returns (bool) {
         Contract_Balance += amount;
         return true;
     }
