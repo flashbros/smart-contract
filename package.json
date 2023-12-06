@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "Compile Contracts": "npx hardhat compile && exit 1",
+    "Execute Tests": "npx hardhat test && exit 1"
   },
   "author": "",
   "license": "ISC",
