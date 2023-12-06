@@ -14,7 +14,7 @@ npm i
 
 ## Wichtige Hardhat Befehle
 ### Kompilieren von Smart Contracts
-Um Ihre Smart Contracts zu kompilieren, verwenden Sie den Befehl:
+Um die Smart Contracts zu kompilieren, verwenden den Befehl:
 ```bash
 npm hardhat compile
 ```
