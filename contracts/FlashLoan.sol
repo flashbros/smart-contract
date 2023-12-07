@@ -136,7 +136,7 @@ contract FlashLoan {
         bool callerIsA=false;
         
         //Check if Channel exists
-        require(channels[channel_id].state.channel_id == payChannel.state.channel_id, "Channel does not exist");
+        require(channels[channel_id].state.channel_id == channel_id, "Channel does not exist");
 
         //Check if Caller is part of the given Channel
         require(channels[channel_id].params.participant_a == caller || channels[channel_id].params.participant_b == caller, "Caller is not part of the given Channel");
@@ -146,17 +146,17 @@ contract FlashLoan {
         
         //Check if Caller has enough Money, if True Transaktion is carried out
         if(callerIsA){
-            require(channels[channel_id].state.balance_A < amount, "Balance in Channel is not enough");
+            require(channels[channel_id].state.balance_A >= amount, "Balance in Channel is not enough");
 
-            balance_A -= amount;
-            balance_B += amount; 
+            channels[channel_id].state.balance_A -= amount;
+            channels[channel_id].state.balance_B += amount; 
 
         }
         else{
-            require(channels[channel_id].state.balance_B < amount, "Balance in Channel is not enough");
+            require(channels[channel_id].state.balance_B >= amount, "Balance in Channel is not enough");
 
-            balance_B -= amount;
-            balance_A += amount; 
+            channels[channel_id].state.balance_B -= amount;
+            channels[channel_id].state.balance_A += amount; 
         }
 
         //Finalized is false, because State of Channel has changed 
