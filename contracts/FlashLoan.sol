@@ -139,6 +139,7 @@ contract FlashLoan {
         require(channels[channel_id].state.channel_id == channel_id, "Channel does not exist");
 
         //Check if Caller is part of the given Channel
+        //TODO == funktioniert nicht für Typ address
         require(channels[channel_id].params.participant_a == caller || channels[channel_id].params.participant_b == caller, "Caller is not part of the given Channel");
 
         //Define if Caller is A or B 
