@@ -132,21 +132,40 @@ contract FlashLoan {
     }
 
     function pay(int channel_id, address caller, int256 amount) public {
-        //Bool to know who is the caller
+        //Bool to know if caller is A or B
         bool callerIsA=false;
         
         //Check if Channel exists
-        require(channels[channel_id].state.channel_id == payChannel.state.channel_id, "Channel does not exist");
+        require(channels[channel_id].state.channel_id == channel_id, "Channel does not exist");
 
         //Check if Caller is part of the given Channel
+        //TODO == funktioniert nicht für Typ address
         require(channels[channel_id].params.participant_a == caller || channels[channel_id].params.participant_b == caller, "Caller is not part of the given Channel");
 
-        //
+        //Define if Caller is A or B 
         if(channels[channel_id].params.participant_b == caller) callerIsA=true;
-            //TODO rausfinden welcher 
-
         
+        //Check if Caller has enough Money, if True Transaktion is carried out
+        if(callerIsA){
+            require(channels[channel_id].state.balance_A >= amount, "Balance in Channel is not enough");
 
+            channels[channel_id].state.balance_A -= amount;
+            channels[channel_id].state.balance_B += amount; 
+
+        }
+        else{
+            require(channels[channel_id].state.balance_B >= amount, "Balance in Channel is not enough");
+
+            channels[channel_id].state.balance_B -= amount;
+            channels[channel_id].state.balance_A += amount; 
+        }
+
+        //Finalized is false, because State of Channel has changed 
+        channels[channel_id].state.finalized_a=false;
+        channels[channel_id].state.finalized_b=false;
+
+        //Increase of Version Number 
+        channels[channel_id].state.version_num ++;
     }
     
       // Update Contract_Balance with the amount
