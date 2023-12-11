@@ -167,7 +167,7 @@ contract FlashLoan {
         //Increase of Version Number 
         channels[channel_id].state.version_num ++;
     }
-    
+
       // Update Contract_Balance with the amount
     function updateContractBalance(int channel_id) public {
         Contract_Balance += channels[channel_id].state.balance_A + channels[channel_id].state.balance_B;
@@ -196,16 +196,16 @@ contract FlashLoan {
             channels[channel_id].params.participant_b.addresse.transfer(channels[channel_id].state.balance_B);
         }
 
-        // set finalised to true because channel is closed 
-        channels[channel_id].state.finalized_a = true;
-        channels[channel_id].state.finalized_b = true;
-
-        // Update Contract_Balance
-        updateContractBalance(channel_id);
-
-        // Delete Channel from the data structure 
-        delete channels[channel_id];
-}
+    //Calling this means that you are d'accord with how the trade went and are okay with ending the trade here
+    function finalize(int channel_id) public {
+        require(channels[channel_id].params.participant_a.addresse == msg.sender || channels[channel_id].params.participant_b.addresse == msg.sender, "Caller is not part of the given Channel");
+        if(channels[channel_id].params.participant_a.addresse == msg.sender) {
+            channels[channel_id].state.finalized_a = true;
+        } else {
+            channels[channel_id].state.finalized_b = true;
+        }
+    }
+    
 
     // FlashLoan
     
