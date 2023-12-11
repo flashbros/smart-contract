@@ -172,7 +172,40 @@ contract FlashLoan {
     function updateContractBalance(int channel_id) public {
         Contract_Balance += channels[channel_id].state.balance_A + channels[channel_id].state.balance_B;
     }
+    
+    function close(int channel_id, address caller) public {
+        // Checks existence of channel
+        require(channels[channel_id].state.channel_id == channel_id, "Channel does not exist");
 
+        // Check if Caller is part of the given Channel
+        require(channels[channel_id].params.participant_a.addresse == caller ||
+                channels[channel_id].params.participant_b.addresse == caller,
+                "Caller is not a participant of the given channel");
+
+        // Checks whether the channel has been finalised
+        require(channels[channel_id].state.finalized_a == false &&
+                channels[channel_id].state.finalized_b == false,
+                "Channel is already finalised");
+
+        // Pay out Balances 
+        if (channels[channel_id].params.participant_a.addresse == caller) {
+            // Caller ist participant A
+            channels[channel_id].params.participant_a.addresse.transfer(channels[channel_id].state.balance_A);
+        } else {
+            // Caller ist participant B
+            channels[channel_id].params.participant_b.addresse.transfer(channels[channel_id].state.balance_B);
+        }
+
+        // set finalised to true because channel is closed 
+        channels[channel_id].state.finalized_a = true;
+        channels[channel_id].state.finalized_b = true;
+
+        // Update Contract_Balance
+        updateContractBalance(channel_id);
+
+        // Delete Channel from the data structure 
+        delete channels[channel_id];
+}
 
     // FlashLoan
     
