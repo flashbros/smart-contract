@@ -1,6 +1,6 @@
 //SPDX-License-Identifier: UNLICENSED
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.0; //todo: which version do we need? - 0.8.23 is the latest
 
 // Interfaces
 interface FlashBorrower {
@@ -12,12 +12,14 @@ interface FlashBorrower {
     ) external returns (bytes32);
 }
 
-// Stucts
+// Stuct Section
 
+// Define Participant
 struct Participant {
     address payable addresse;
 }
 
+// Define Channel State
 struct Channel_State {
     int channel_id;
     uint balance_A;
@@ -27,21 +29,26 @@ struct Channel_State {
     bool finalized_b;
 }
 
+// Define Channel Params with Participants
 struct Channel_Params{
     Participant participant_a;
     Participant participant_b;
 }
 
+// Define Channel Control
 struct Channel_Control{
     bool funded_a;
     bool funded_b;
 }
 
+// Define Channel
 struct Channel{
     Channel_State state;
     Channel_Params params;
     Channel_Control control;
 }
+
+// Contract Section
 
 contract FlashLoan {
     // Variables
@@ -62,9 +69,13 @@ contract FlashLoan {
         return a.addresse == b.addresse;
     }
 
-    // Channel
+    // Channel Section
 
-    // Open Channel
+    /**
+     * @dev Opens a new channel between two participants 
+     *      and adds it to the channels mapping and updates the channel_count
+     * @param params The parameters of the channel
+     */
     function open(Channel_Params calldata params) public{
         // Create new Channel
         Channel memory channel;
@@ -88,7 +99,14 @@ contract FlashLoan {
         // Update channel_count
         channel_count += 1;
     }
-
+    
+    /**
+     * @dev Funds a channel with the given amount
+     *      and updates the balance of either participant_a or participant_b depending on the caller 
+     * @param channel_id The id of the channel
+     * @param caller The address of the caller
+     * @param amount The amount to fund the channel with
+     */
     function fund (int channel_id, address caller , uint256 amount) public {
 
         Channel memory channel = channels[channel_id];
@@ -136,6 +154,14 @@ contract FlashLoan {
         }
     }
 
+    /**
+     * @dev Pays the given amount from the balance of the caller to the other participant
+     *      and updates the balance of either participant_a or participant_b depending on the caller 
+     *      sets finalized_a and finalized_b to false and increases the version_num by 1
+     * @param channel_id The id of the channel
+     * @param caller The address of the caller
+     * @param amount The amount to pay
+     */
     function pay(int channel_id, address caller, uint256 amount) public {
         //Bool to know if caller is A or B
         bool callerIsA=false;
@@ -172,12 +198,19 @@ contract FlashLoan {
         //Increase of Version Number 
         channels[channel_id].state.version_num ++;
     }
-    
+
       // Update Contract_Balance with the amount
     function updateContractBalance(int channel_id) public {
         Contract_Balance = Contract_Balance + channels[channel_id].state.balance_A + channels[channel_id].state.balance_B;
     }
     
+    /**
+     * @dev Closes the channel and pays out the balance of the caller
+     *      and updates the balance of either participant_a or participant_b depending on the caller 
+     *      sets finalized_a and finalized_b to true deletes the channel from the data structure
+     * @param channel_id The id of the channel
+     * @param caller The address of the caller
+     */
     function close(int channel_id, address caller) public {
         // Checks existence of channel
         require(channels[channel_id].state.channel_id == channel_id, "Channel does not exist");
@@ -201,18 +234,18 @@ contract FlashLoan {
             channels[channel_id].params.participant_b.addresse.transfer(channels[channel_id].state.balance_B);
         }
 
-        // set finalised to true because channel is closed 
-        channels[channel_id].state.finalized_a = true;
-        channels[channel_id].state.finalized_b = true;
+    //Calling this means that you are d'accord with how the trade went and are okay with ending the trade here
+    function finalize(int channel_id) public {
+        require(channels[channel_id].params.participant_a.addresse == msg.sender || channels[channel_id].params.participant_b.addresse == msg.sender, "Caller is not part of the given Channel");
+        if(channels[channel_id].params.participant_a.addresse == msg.sender) {
+            channels[channel_id].state.finalized_a = true;
+        } else {
+            channels[channel_id].state.finalized_b = true;
+        }
+    }
+    
 
-        // Update Contract_Balance
-        updateContractBalance(channel_id);
-
-        // Delete Channel from the data structure 
-        delete channels[channel_id];
-}
-
-    // FlashLoan
+    // FlashLoan Section
     
     function flashLoan(
     FlashBorrower receiver,
