@@ -15,13 +15,13 @@ interface FlashBorrower {
 // Stucts
 
 struct Participant {
-    address addresse;
+    address payable addresse;
 }
 
 struct Channel_State {
     int channel_id;
-    int balance_A;
-    int balance_B;
+    uint balance_A;
+    uint balance_B;
     int version_num;
     bool finalized_a;
     bool finalized_b;
@@ -45,17 +45,22 @@ struct Channel{
 
 contract FlashLoan {
     // Variables
-    int256 public Contract_Balance = 0 ether;
+    uint256 public Contract_Balance = 0 ether;
 
     Participant[] public participants;
     
-    int256 public channel_count = 0;
+    int public channel_count = 0;
     
     // Mapping: Channel_ID => Channel
     mapping(int => Channel) public channels;
 
     // Mapping: Channel_ID => Balance
-    mapping(int => int256) public balances;
+    mapping(int => uint256) public balances;
+
+    // Compare two Participants
+    function compareParticipants(Participant memory a, Participant memory b) private pure returns (bool) {
+        return a.addresse == b.addresse;
+    }
 
     // Channel
 
@@ -84,7 +89,7 @@ contract FlashLoan {
         channel_count += 1;
     }
 
-    function fund (int channel_id, address caller , int256 amount) public {
+    function fund (int channel_id, address caller , uint256 amount) public {
 
         Channel memory channel = channels[channel_id];
 
@@ -131,7 +136,7 @@ contract FlashLoan {
         }
     }
 
-    function pay(int channel_id, address caller, int256 amount) public {
+    function pay(int channel_id, address caller, uint256 amount) public {
         //Bool to know if caller is A or B
         bool callerIsA=false;
         
@@ -140,10 +145,10 @@ contract FlashLoan {
 
         //Check if Caller is part of the given Channel
         //TODO == funktioniert nicht für Typ address
-        require(channels[channel_id].params.participant_a == caller || channels[channel_id].params.participant_b == caller, "Caller is not part of the given Channel");
+        require(channels[channel_id].params.participant_a.addresse == caller || channels[channel_id].params.participant_b.addresse == caller, "Caller is not part of the given Channel");
 
         //Define if Caller is A or B 
-        if(channels[channel_id].params.participant_b == caller) callerIsA=true;
+        if(channels[channel_id].params.participant_b.addresse == caller) callerIsA = true;
         
         //Check if Caller has enough Money, if True Transaktion is carried out
         if(callerIsA){
@@ -161,8 +166,8 @@ contract FlashLoan {
         }
 
         //Finalized is false, because State of Channel has changed 
-        channels[channel_id].state.finalized_a=false;
-        channels[channel_id].state.finalized_b=false;
+        channels[channel_id].state.finalized_a = false;
+        channels[channel_id].state.finalized_b = false;
 
         //Increase of Version Number 
         channels[channel_id].state.version_num ++;
@@ -170,7 +175,7 @@ contract FlashLoan {
     
       // Update Contract_Balance with the amount
     function updateContractBalance(int channel_id) public {
-        Contract_Balance += channels[channel_id].state.balance_A + channels[channel_id].state.balance_B;
+        Contract_Balance = Contract_Balance + channels[channel_id].state.balance_A + channels[channel_id].state.balance_B;
     }
     
     function close(int channel_id, address caller) public {
