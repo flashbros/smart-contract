@@ -57,6 +57,11 @@ contract FlashLoan {
     Participant[] public participants;
     
     int public channel_count = 0;
+    int r = 0;
+
+    //Events
+    event NewTransaction(uint indexed transactionId, address sender, address receiver, uint amount);
+    event PartyFinalized(int channel_id, address party);
     
     // Mapping: Channel_ID => Channel
     mapping(int => Channel) public channels;
@@ -197,6 +202,12 @@ contract FlashLoan {
 
         //Increase of Version Number 
         channels[channel_id].state.version_num ++;
+
+        if(callerIsA) {
+            emit NewTransaction(1, msg.sender, channels[channel_id].params.participant_b.addresse, amount);
+        } else {
+            emit NewTransaction(1, msg.sender, channels[channel_id].params.participant_a.addresse, amount);
+        }
     }
 
       // Update Contract_Balance with the amount
@@ -233,6 +244,7 @@ contract FlashLoan {
             // Caller ist participant B
             channels[channel_id].params.participant_b.addresse.transfer(channels[channel_id].state.balance_B);
         }
+    }
 
     //Calling this means that you are d'accord with how the trade went and are okay with ending the trade here
     function finalize(int channel_id) public {
@@ -242,6 +254,7 @@ contract FlashLoan {
         } else {
             channels[channel_id].state.finalized_b = true;
         }
+        emit PartyFinalized(channel_id, msg.sender);
     }
     
 
