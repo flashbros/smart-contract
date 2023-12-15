@@ -94,7 +94,7 @@ contract FlashLoan {
         channel.control.funded_b = false;
 
         // Add Channel to channels
-        channels[channel_id] = channel;
+        channels[state.channel_id] = channel;
 
         // Add Participants to participants
         participants.push(params.participant_a);
@@ -116,10 +116,10 @@ contract FlashLoan {
         require(channel.state.channel_id == channel_id, "Channel does not exist");
 
         // Check if channel is not finalized
-        require(channel.state.finalized_a == false && channel.state.finalized_b == false, "Channel is finalized");
+        require(channel.state.finalized == false, "Channel is finalized");
 
         // Check if caller is participant_a or participant_b
-        if (msg.sender() == channel.params.participant_a.addresse){
+        if (msg.sender == channel.params.participant_a.addresse){
             // Check if participant_a is not funded
             require(channel.control.funded_a == false, "Participant A already funded");
 
@@ -132,7 +132,7 @@ contract FlashLoan {
             // Update balance of participant_a
             channel.state.balance_A = amount;
         }
-        else if (msg.sender() == channel.params.participant_b.addresse){
+        else if (msg.sender == channel.params.participant_b.addresse){
             // Check if participant_b is not funded
             require(channel.control.funded_b == false, "Participant B already funded");
 
@@ -149,12 +149,6 @@ contract FlashLoan {
             revert("Caller is not a participant");
         }
     }
-
-
-      // Update Contract_Balance with the amount
-    //function updateContractBalance(int channel_id) public {
-     //   Contract_Balance = Contract_Balance + channels[channel_id].state.balance_A + channels[channel_id].state.balance_B;
-    //}
     
     /**
      * @dev Closes the channel and pays out the balance of the caller
