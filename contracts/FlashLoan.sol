@@ -72,6 +72,7 @@ contract FlashLoan {
      * @dev Opens a new channel between two participants 
      *      and adds it to the channels mapping and updates the channel_count
      * @param params The parameters of the channel
+     * @param state The state of the channel
      */
     function open(Channel_Params calldata params, Channel_State calldata state) public{
         //TODO: Richtig so? 
@@ -105,10 +106,9 @@ contract FlashLoan {
      * @dev Funds a channel with the given amount
      *      and updates the balance of either participant_a or participant_b depending on the caller 
      * @param channel_id The id of the channel
-     * @param caller The address of the caller
      * @param amount The amount to fund the channel with
      */
-    function fund (int channel_id, address caller , uint256 amount) public {
+    function fund (int channel_id, uint256 amount) public {
 
         Channel memory channel = channels[channel_id];
 
@@ -119,7 +119,7 @@ contract FlashLoan {
         require(channel.state.finalized_a == false && channel.state.finalized_b == false, "Channel is finalized");
 
         // Check if caller is participant_a or participant_b
-        if (caller == channel.params.participant_a.addresse){
+        if (msg.sender() == channel.params.participant_a.addresse){
             // Check if participant_a is not funded
             require(channel.control.funded_a == false, "Participant A already funded");
 
@@ -132,7 +132,7 @@ contract FlashLoan {
             // Update balance of participant_a
             channel.state.balance_A = amount;
         }
-        else if (caller == channel.params.participant_b.addresse){
+        else if (msg.sender() == channel.params.participant_b.addresse){
             // Check if participant_b is not funded
             require(channel.control.funded_b == false, "Participant B already funded");
 
@@ -148,18 +148,13 @@ contract FlashLoan {
         else{
             revert("Caller is not a participant");
         }
-
-        // Update Contract_Balance
-        if(channel.control.funded_a == true && channel.control.funded_b == true){
-            updateContractBalance(channel_id);
-        }
     }
 
 
       // Update Contract_Balance with the amount
-    function updateContractBalance(int channel_id) public {
-        Contract_Balance = Contract_Balance + channels[channel_id].state.balance_A + channels[channel_id].state.balance_B;
-    }
+    //function updateContractBalance(int channel_id) public {
+     //   Contract_Balance = Contract_Balance + channels[channel_id].state.balance_A + channels[channel_id].state.balance_B;
+    //}
     
     /**
      * @dev Closes the channel and pays out the balance of the caller
@@ -190,6 +185,7 @@ contract FlashLoan {
             // Caller ist participant B
             channels[channel_id].params.participant_b.addresse.transfer(channels[channel_id].state.balance_B);
         }
+    }
 
     //Calling this means that you are d'accord with how the trade went and are okay with ending the trade here
     function finalize(int channel_id) public {
