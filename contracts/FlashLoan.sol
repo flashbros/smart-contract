@@ -52,8 +52,6 @@ struct Channel{
 contract FlashLoan {
     // Variables
     uint256 public Contract_Balance = 0 ether;
-
-    Participant[] public participants;
     
     // Mapping: Channel_ID => Channel
     mapping(int => Channel) public channels;
@@ -75,11 +73,11 @@ contract FlashLoan {
      * @param state The state of the channel
      */
     function open(Channel_Params calldata params, Channel_State calldata state) public{
-        //TODO: Richtig so? 
-
+        
+        //TODO: Channel abfrage richtig so? 
         // Check if channel already exists
         require(channels[state.channel_id].state.channel_id != state.channel_id, "Channel already exists");
-        
+
         // Check if participants are the same
         require(compareParticipants(params.participant_a, params.participant_b) == false, "Participants are the same");
 
@@ -95,11 +93,6 @@ contract FlashLoan {
 
         // Add Channel to channels
         channels[state.channel_id] = channel;
-
-        // Add Participants to participants
-        participants.push(params.participant_a);
-        participants.push(params.participant_b);
-
     }
     
     /**
