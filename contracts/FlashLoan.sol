@@ -148,24 +148,21 @@ contract FlashLoan {
      *      and updates the balance of either participant_a or participant_b depending on the caller 
      *      sets finalized_a and finalized_b to true deletes the channel from the data structure
      * @param channel_id The id of the channel
-     * @param caller The address of the caller
      */
-    function close(int channel_id, address caller) public {
+    function close(int channel_id) public {
         // Checks existence of channel
         require(channels[channel_id].state.channel_id == channel_id, "Channel does not exist");
 
         // Check if Caller is part of the given Channel
-        require(channels[channel_id].params.participant_a.addresse == caller ||
-                channels[channel_id].params.participant_b.addresse == caller,
+        require(channels[channel_id].params.participant_a.addresse == msg.sender ||
+                channels[channel_id].params.participant_b.addresse == msg.sender,
                 "Caller is not a participant of the given channel");
 
         // Checks whether the channel has been finalised
-        require(channels[channel_id].state.finalized_a == false &&
-                channels[channel_id].state.finalized_b == false,
-                "Channel is already finalised");
+        require(channels[channel_id].state.finalized == false, "Channel is already finalised");
 
         // Pay out Balances 
-        if (channels[channel_id].params.participant_a.addresse == caller) {
+        if (channels[channel_id].params.participant_a.addresse == msg.sender) {
             // Caller ist participant A
             channels[channel_id].params.participant_a.addresse.transfer(channels[channel_id].state.balance_A);
         } else {
