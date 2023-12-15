@@ -25,8 +25,7 @@ struct Channel_State {
     uint balance_A;
     uint balance_B;
     int version_num;
-    bool finalized_a;
-    bool finalized_b;
+    bool finalized;
 }
 
 // Define Channel Params with Participants
@@ -56,8 +55,6 @@ contract FlashLoan {
 
     Participant[] public participants;
     
-    int public channel_count = 0;
-    
     // Mapping: Channel_ID => Channel
     mapping(int => Channel) public channels;
 
@@ -76,28 +73,32 @@ contract FlashLoan {
      *      and adds it to the channels mapping and updates the channel_count
      * @param params The parameters of the channel
      */
-    function open(Channel_Params calldata params) public{
+    function open(Channel_Params calldata params, Channel_State calldata state) public{
+        //TODO: Richtig so? 
+
+        // Check if channel already exists
+        require(channels[state.channel_id].state.channel_id != state.channel_id, "Channel already exists");
+        
+        // Check if participants are the same
+        require(compareParticipants(params.participant_a, params.participant_b) == false, "Participants are the same");
+
+        // Check if version number is 0
+        require(state.version_num == 0, "Version number is not 0");
+
         // Create new Channel
         Channel memory channel;
-        channel.state.channel_id = channel_count;
-        channel.state.balance_A = 0;
-        channel.state.balance_B = 0;
-        channel.state.version_num = 0;
-        channel.state.finalized_a = false;
-        channel.state.finalized_b = false;
+        channel.state = state;
         channel.params = params;
         channel.control.funded_a = false;
         channel.control.funded_b = false;
 
         // Add Channel to channels
-        channels[channel_count] = channel;
+        channels[channel_id] = channel;
 
         // Add Participants to participants
         participants.push(params.participant_a);
         participants.push(params.participant_b);
 
-        // Update channel_count
-        channel_count += 1;
     }
     
     /**
