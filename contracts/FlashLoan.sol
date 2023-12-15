@@ -84,6 +84,9 @@ contract FlashLoan {
         // Check if version number is 0
         require(state.version_num == 0, "Version number is not 0");
 
+        // Check if channel is not finalized
+        require(state.finalized == false, "Channel is finalized");
+
         // Create new Channel
         Channel memory channel;
         channel.state = state;
@@ -171,7 +174,11 @@ contract FlashLoan {
         }
     }
 
-    //Calling this means that you are d'accord with how the trade went and are okay with ending the trade here
+    //TODO: Gibt nurnoch finalize als bool, wie wissen wir aber dass beide finalisiert haben? -> Das passiert ja offchain aber was geben sie dann zurück?
+    /**
+     * Calling this function means that you are d'accord with how the trade went and are okay with ending the trade here
+     * @param channel_id The id of the channel
+     */
     function finalize(int channel_id) public {
         require(channels[channel_id].params.participant_a.addresse == msg.sender || channels[channel_id].params.participant_b.addresse == msg.sender, "Caller is not part of the given Channel");
         if(channels[channel_id].params.participant_a.addresse == msg.sender) {
