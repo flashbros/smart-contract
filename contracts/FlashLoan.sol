@@ -233,6 +233,7 @@ contract FlashLoan {
             // Caller ist participant B
             channels[channel_id].params.participant_b.addresse.transfer(channels[channel_id].state.balance_B);
         }
+    }
 
     //Calling this means that you are d'accord with how the trade went and are okay with ending the trade here
     function finalize(int channel_id) public {
