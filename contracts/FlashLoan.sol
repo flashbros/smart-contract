@@ -181,11 +181,14 @@ contract FlashLoan {
      */
     function finalize(int channel_id) public {
         require(channels[channel_id].params.participant_a.addresse == msg.sender || channels[channel_id].params.participant_b.addresse == msg.sender, "Caller is not part of the given Channel");
+        /*
         if(channels[channel_id].params.participant_a.addresse == msg.sender) {
             channels[channel_id].state.finalized_a = true;
         } else {
             channels[channel_id].state.finalized_b = true;
         }
+        */
+        channels[channel_id].state.finalized = true;
     }
     
 
