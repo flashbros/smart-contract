@@ -1,6 +1,7 @@
 //SPDX-License-Identifier: UNLICENSED
 
 pragma solidity ^0.8.0; //todo: which version do we need? - 0.8.23 is the latest
+import "hardhat/console.sol";
 
 // Interfaces
 interface FlashBorrower {
@@ -106,7 +107,7 @@ contract FlashLoan {
      */
     function fund (int channel_id, uint256 amount) public {
 
-        Channel memory channel = channels[channel_id];
+        Channel storage channel = channels[channel_id];
 
         // Check if channel exists
         require(channel.state.channel_id == channel_id, "Channel does not exist");
@@ -114,6 +115,8 @@ contract FlashLoan {
         // Check if channel is not finalized
         require(channel.state.finalized == false, "Channel is finalized");
 
+        console.log("msg.sender: ", msg.sender);
+        console.log("participant_a: ", channel.params.participant_a.addresse);
         // Check if caller is participant_a or participant_b
         if (msg.sender == channel.params.participant_a.addresse){
             // Check if participant_a is not funded
@@ -127,6 +130,9 @@ contract FlashLoan {
 
             // Update balance of participant_a
             channel.state.balance_A = amount;
+            console.log("balance_A: ", channel.state.balance_A);
+            console.log(amount);
+            console.log(channel.control.funded_a);
         }
         else if (msg.sender == channel.params.participant_b.addresse){
             // Check if participant_b is not funded
