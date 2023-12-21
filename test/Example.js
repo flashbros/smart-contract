@@ -123,6 +123,7 @@ describe("FlashLoan - fund method", function () {
     });
 });
 
+
 describe("FlashLoan - close method", function () {
   it("should close the channel, pay out the caller's balance, and update participant balances", async function () {
     const [owner, participantA, participantB] = await ethers.getSigners();
@@ -130,8 +131,8 @@ describe("FlashLoan - close method", function () {
     const flashLoan = await FlashLoan.deploy();
 
     const channel_id = 1;
-    const initialBalanceA = 2000;
-    const initialBalanceB = 3000;
+    const initialBalanceA = 200;
+    const initialBalanceB = 300;
 
     // Open a new channel with initial balances
     await flashLoan.connect(owner).open(
@@ -155,7 +156,6 @@ describe("FlashLoan - close method", function () {
     // Close the channel by participant A
     const txClose = await flashLoan.connect(participantA).close(channel_id);
     await txClose.wait();
-    console.log("Channel closed");
 
     // Check if the channel is finalized
     const finalChannel = await flashLoan.channels(channel_id);
