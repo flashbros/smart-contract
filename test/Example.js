@@ -173,6 +173,4 @@ describe("FlashLoan - close method", function () {
     const expectedBalanceB = initialBalanceB + finalChannel.state.balance_B;
     expect(finalBalanceB.toString()).to.equal(expectedBalanceB.toString());
   });
-
-  // Add more test cases as needed
 });
