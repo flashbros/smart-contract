@@ -95,7 +95,6 @@ describe("FlashLoan - fund method", function () {
 
     // Check the channel state after participant A's funding
     const channel_A = await flashLoan.channels(channel_id);
-    console.log("Channel state after participant A's funding:", channel_A.state);
 
     // Check if the channel balances are updated for participant A
     expect(channel_A.state.balance_A.toString()).to.equal(amount.toString());
@@ -103,7 +102,6 @@ describe("FlashLoan - fund method", function () {
 
     // Check if the channel balances are not updated for participant B
     const channel_B = await flashLoan.channels(channel_id);
-    console.log("Channel state before participant B's funding:", channel_B.state);
 
     expect(channel_B.state.balance_B.toString()).to.equal("0");
     expect(channel_B.control.funded_b).to.be.false;
@@ -114,7 +112,6 @@ describe("FlashLoan - fund method", function () {
 
     // Check the final channel state after participant B's funding
     const finalChannel = await flashLoan.channels(channel_id);
-    console.log("Final channel state:", finalChannel.state);
 
 
     // Check if the channel balances are updated for participant B
@@ -122,6 +119,60 @@ describe("FlashLoan - fund method", function () {
     expect(finalChannel.control.funded_b).to.be.true;
 
     // Check if the contract balance is updated
-    //todo: brauchen wir das überhaupt?
+    //TODO: brauchen wir das überhaupt?
     });
+});
+
+describe("FlashLoan - close method", function () {
+  it("should close the channel, pay out the caller's balance, and update participant balances", async function () {
+    const [owner, participantA, participantB] = await ethers.getSigners();
+    const FlashLoan = await ethers.getContractFactory("FlashLoan");
+    const flashLoan = await FlashLoan.deploy();
+
+    const channel_id = 1;
+    const initialBalanceA = 2000;
+    const initialBalanceB = 3000;
+
+    // Open a new channel with initial balances
+    await flashLoan.connect(owner).open(
+      {
+        participant_a: {
+          addresse: participantA.address,
+        },
+        participant_b: {
+          addresse: participantB.address,
+        },
+      },
+      {
+        channel_id: channel_id,
+        balance_A: initialBalanceA,
+        balance_B: initialBalanceB,
+        version_num: 0,
+        finalized: false,
+      }
+    );
+
+    // Close the channel by participant A
+    const txClose = await flashLoan.connect(participantA).close(channel_id);
+    await txClose.wait();
+    console.log("Channel closed");
+
+    // Check if the channel is finalized
+    const finalChannel = await flashLoan.channels(channel_id);
+    expect(finalChannel.state.finalized).to.be.true;
+
+    // Check if the balances are updated for participant A and B
+    const finalBalanceA = await participantA.getBalance();
+    const finalBalanceB = await participantB.getBalance();
+
+    // Participant A should receive their initial balance plus the balance from the channel
+    const expectedBalanceA = initialBalanceA + finalChannel.state.balance_A;
+    expect(finalBalanceA.toString()).to.equal(expectedBalanceA.toString());
+
+    // Participant B should receive their initial balance plus the balance from the channel
+    const expectedBalanceB = initialBalanceB + finalChannel.state.balance_B;
+    expect(finalBalanceB.toString()).to.equal(expectedBalanceB.toString());
+  });
+
+  // Add more test cases as needed
 });
