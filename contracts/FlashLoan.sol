@@ -175,41 +175,30 @@ contract FlashLoan {
             "Caller is not a participant of the given channel");
 
         // Checks whether the channel has been finalized
-        require(!channel.state.finalized, "Channel is already finalised");
+        require(channel.state.finalized, "Channel is not yet finalised");
 
         // Determine the participant and the corresponding balance
         address payable participantAddress;
         uint256 amountToTransfer;
 
-        if (channel.params.participant_a.addresse == msg.sender) {
-            // Caller is participant A
-            participantAddress = channel.params.participant_a.addresse;
-            amountToTransfer = channel.state.balance_A;
-        } else {
-            // Caller is participant B
-            participantAddress = channel.params.participant_b.addresse;
-            amountToTransfer = channel.state.balance_B;
-        }
 
         // Check if there is a balance to transfer
         require(amountToTransfer > 0, "Nothing to transfer");
+        if(channels[channel_id].state.balance_A > 0){
+            amountToTransfer = channels[channel_id].state.balance_A;
+            (bool transferSuccess, bytes memory data) = channel.params.participant_a.addresse.call{value: amountToTransfer}("");
+            require(transferSuccess, "Transfer failed");
+        }
 
-        // Log information
-        console.log("Transferring %s to %s", amountToTransfer, participantAddress);
-        console.log(address(this).balance);
-        console.log(participantAddress.balance);
-
-        // Transfer funds
-        (bool transferSuccess, bytes memory data) = participantAddress.call{value: amountToTransfer}("");
+        if(channels[channel_id].state.balance_B > 0){
+            amountToTransfer = channels[channel_id].state.balance_B;
+            (bool transferSuccess, bytes memory data) = channel.params.participant_b.addresse.call{value: amountToTransfer}("");
+            require(transferSuccess, "Transfer failed");
+        }
         
-        // Log transfer result
-        console.log("Transfer success: %s", transferSuccess);
-        console.log(participantAddress.balance);
-
-        // Check if the transfer was successful
-        require(transferSuccess, "Transfer failed");
 
         // Update state
+        //TODO später vielleicht eh channel löschen
         if (participantAddress == channel.params.participant_a.addresse) {
             channel.state.balance_A = 0;
         } else {
@@ -218,27 +207,24 @@ contract FlashLoan {
     }
 
 
-    /**
-     * Calling this function means that you are d'accord with how the trade went and are okay with ending the trade here
-     * @param newState The new state of the channel
-     * @param sigA The signature of participant_a
-     * @param sigB The signature of participant_b
-     */
-    function finalize(Channel_State calldata newState, bytes32 sigA, bytes32 sigB) public {
+    
+    function finalize(int  channel_id) public {
         //Einfache Implementation dass es erstmal läuft aber keine überprüffung der Signaturen 
 
         // Check if channel exists
-        require(channels[newState.channel_id].state.channel_id == newState.channel_id, "Channel does not exist");
+        //require(channels[newState.channel_id].state.channel_id == newState.channel_id, "Channel does not exist");
         //Check if channel is not finalized
-        require(channels[newState.channel_id].state.finalized == false, "Channel is already finalized");
+        //require(channels[newState.channel_id].state.finalized == false, "Channel is already finalized");
         //Check if new Channel is finalized
-        require(newState.finalized == true, "New Channel is not finalized");
+        //require(newState.finalized == true, "New Channel is not finalized");
         
         //Hier müsste dann die Überprüfung der Signaturen stattfinden
 
         // Set new state
-        channels[newState.channel_id].state = newState;
-        
+        //channels[newState.channel_id].state = newState;
+        //kurzer Test ob es funktioniert
+
+        channels[channel_id].state.finalized = true;
 
         //Ideen wie man die Signautren überprüfen kann
         //Video hilfreich: https://www.youtube.com/watch?v=ZcmQ92vBLgg

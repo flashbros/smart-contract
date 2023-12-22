@@ -170,6 +170,9 @@ describe("FlashLoan - close method", function () {
     const balanceAbefore = await ethers.provider.getBalance(participantA.address);
     const balanceBbefore = await ethers.provider.getBalance(participantB.address);
 
+    //finalize channel
+    const txFinalize = await flashLoan.connect(participantA).finalize(channel_id);
+
     // Close the channel by participant A
     const txClose = await flashLoan.connect(participantA).close(channel_id);
     await txClose.wait();
