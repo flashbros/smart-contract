@@ -18,6 +18,7 @@ interface FlashBorrower {
 // Define Participant
 struct Participant {
     address payable addresse;
+    bytes32 pubKey;
 }
 
 // Define Channel State
@@ -206,21 +207,60 @@ contract FlashLoan {
     }
 
 
-    //TODO: Gibt nurnoch finalize als bool, wie wissen wir aber dass beide finalisiert haben? -> Das passiert ja offchain aber was geben sie dann zurück?
     /**
      * Calling this function means that you are d'accord with how the trade went and are okay with ending the trade here
-     * @param channel_id The id of the channel
+     * @param newState The new state of the channel
+     * @param sigA The signature of participant_a
+     * @param sigB The signature of participant_b
      */
-    function finalize(int channel_id) public {
-        require(channels[channel_id].params.participant_a.addresse == msg.sender || channels[channel_id].params.participant_b.addresse == msg.sender, "Caller is not part of the given Channel");
+    function finalize(Channel_State calldata newState, bytes32 sigA, bytes32 sigB) public {
+        //Einfache Implementation dass es erstmal läuft aber keine überprüffung der Signaturen 
+
+        // Check if channel exists
+        require(channels[newState.channel_id].state.channel_id == newState.channel_id, "Channel does not exist");
+        //Check if channel is not finalized
+        require(channels[newState.channel_id].state.finalized == false, "Channel is already finalized");
+        //Check if new Channel is finalized
+        require(newState.finalized == true, "New Channel is not finalized");
+        
+        //Hier müsste dann die Überprüfung der Signaturen stattfinden
+
+        // Set new state
+        channels[newState.channel_id].state = newState;
+        
+
+        //Ideen wie man die Signautren überprüfen kann
+        //Video hilfreich: https://www.youtube.com/watch?v=ZcmQ92vBLgg
+        
+        //Idee1
         /*
-        if(channels[channel_id].params.participant_a.addresse == msg.sender) {
-            channels[channel_id].state.finalized_a = true;
-        } else {
-            channels[channel_id].state.finalized_b = true;
-        }
+        bytes32 hashedState = keccak256(abi.encode(newState));
+        // Check if channel exists
+        require(channels[newState.channel_id].state.channel_id == newState.channel_id, "Channel does not exist");
+
+        // Check if newState is signed by both participants
+        //TODO check if sigA and sigB are correct
+        require(ecrecover(hashedState, uint8(sigA[0]), bytes32(sigA[1]), bytes32(sigA[2])) == channels[newState.channel_id].params.participant_a.pubKey, "Signature of participant A is not valid");
+        require(ecrecover(hashedState, uint8(sigB[0]), bytes32(sigB[1]), bytes32(sigB[2])) == channels[newState.channel_id].params.participant_b.pubKey, "Signature of participant B is not valid");
+
+        // Set new state
+        channels[newState.channel_id].state = newState;
+
         */
-        channels[channel_id].state.finalized = true;
+
+        //Idee2
+        /*
+         // Check if channel exists
+        require(channels[newState.channel_id].state.channel_id == newState.channel_id, "Channel does not exist");
+
+        // Check if newState is signed by both participants
+        require(verifySig(hashedState, sigA, channels[newState.channel_id].params.participant_a.pubKey), "Signature of participant_a is not valid");
+        require(verifySig(hashedState, sigB, channels[newState.channel_id].params.participant_b.pubKey), "Signature of participant_b is not valid");
+
+        // Set new state
+        channels[newState.channel_id].state = newState;
+
+        */
     }
     
 
