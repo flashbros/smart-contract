@@ -183,6 +183,7 @@ contract FlashLoan {
 
 
         // Check if there is a balance to transfer
+        //TODO find out how to user Contract as sender
         require(amountToTransfer > 0, "Nothing to transfer");
         if(channels[channel_id].state.balance_A > 0){
             amountToTransfer = channels[channel_id].state.balance_A;

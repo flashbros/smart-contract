@@ -187,5 +187,6 @@ describe("FlashLoan - close method", function () {
     const balanceBafter = await ethers.provider.getBalance(participantB.address);
     expect(balanceBafter).to.equal(balanceBbefore + channel_B.state.balance_B.toString());
 
+    
   });
 });
