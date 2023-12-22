@@ -1,6 +1,7 @@
 //SPDX-License-Identifier: UNLICENSED
 
 pragma solidity ^0.8.0; //todo: which version do we need? - 0.8.23 is the latest
+import "hardhat/console.sol";
 
 // Interfaces
 interface FlashBorrower {
@@ -25,8 +26,7 @@ struct Channel_State {
     uint balance_A;
     uint balance_B;
     int version_num;
-    bool finalized_a;
-    bool finalized_b;
+    bool finalized;
 }
 
 // Define Channel Params with Participants
@@ -53,10 +53,6 @@ struct Channel{
 contract FlashLoan {
     // Variables
     uint256 public Contract_Balance = 0 ether;
-
-    Participant[] public participants;
-    
-    int public channel_count = 0;
     
     // Mapping: Channel_ID => Channel
     mapping(int => Channel) public channels;
@@ -75,50 +71,51 @@ contract FlashLoan {
      * @dev Opens a new channel between two participants 
      *      and adds it to the channels mapping and updates the channel_count
      * @param params The parameters of the channel
+     * @param state The state of the channel
      */
-    function open(Channel_Params calldata params) public{
+    function open(Channel_Params calldata params, Channel_State calldata state) public{
+        
+        //TODO: Channel abfrage richtig so? 
+        // Check if channel already exists
+        require(channels[state.channel_id].state.channel_id != state.channel_id, "Channel already exists");
+
+        // Check if participants are the same
+        require(compareParticipants(params.participant_a, params.participant_b) == false, "Participants are the same");
+
+        // Check if version number is 0
+        require(state.version_num == 0, "Version number is not 0");
+
+        // Check if channel is not finalized
+        require(state.finalized == false, "Channel is finalized");
+
         // Create new Channel
         Channel memory channel;
-        channel.state.channel_id = channel_count;
-        channel.state.balance_A = 0;
-        channel.state.balance_B = 0;
-        channel.state.version_num = 0;
-        channel.state.finalized_a = false;
-        channel.state.finalized_b = false;
+        channel.state = state;
         channel.params = params;
         channel.control.funded_a = false;
         channel.control.funded_b = false;
 
         // Add Channel to channels
-        channels[channel_count] = channel;
-
-        // Add Participants to participants
-        participants.push(params.participant_a);
-        participants.push(params.participant_b);
-
-        // Update channel_count
-        channel_count += 1;
+        channels[state.channel_id] = channel;
     }
     
     /**
      * @dev Funds a channel with the given amount
      *      and updates the balance of either participant_a or participant_b depending on the caller 
      * @param channel_id The id of the channel
-     * @param caller The address of the caller
      * @param amount The amount to fund the channel with
      */
-    function fund (int channel_id, address caller , uint256 amount) public {
-
-        Channel memory channel = channels[channel_id];
+    function fund (int channel_id, uint256 amount) public {
+        Channel storage channel = channels[channel_id];
 
         // Check if channel exists
         require(channel.state.channel_id == channel_id, "Channel does not exist");
 
         // Check if channel is not finalized
-        require(channel.state.finalized_a == false && channel.state.finalized_b == false, "Channel is finalized");
+        require(channel.state.finalized == false, "Channel is finalized");
 
         // Check if caller is participant_a or participant_b
-        if (caller == channel.params.participant_a.addresse){
+        if (msg.sender == channel.params.participant_a.addresse){
             // Check if participant_a is not funded
             require(channel.control.funded_a == false, "Participant A already funded");
 
@@ -130,8 +127,9 @@ contract FlashLoan {
 
             // Update balance of participant_a
             channel.state.balance_A = amount;
+            
         }
-        else if (caller == channel.params.participant_b.addresse){
+        else if (msg.sender == channel.params.participant_b.addresse){
             // Check if participant_b is not funded
             require(channel.control.funded_b == false, "Participant B already funded");
 
@@ -147,101 +145,82 @@ contract FlashLoan {
         else{
             revert("Caller is not a participant");
         }
-
-        // Update Contract_Balance
-        if(channel.control.funded_a == true && channel.control.funded_b == true){
-            updateContractBalance(channel_id);
-        }
-    }
-
-    /**
-     * @dev Pays the given amount from the balance of the caller to the other participant
-     *      and updates the balance of either participant_a or participant_b depending on the caller 
-     *      sets finalized_a and finalized_b to false and increases the version_num by 1
-     * @param channel_id The id of the channel
-     * @param caller The address of the caller
-     * @param amount The amount to pay
-     */
-    function pay(int channel_id, address caller, uint256 amount) public {
-        //Bool to know if caller is A or B
-        bool callerIsA=false;
-        
-        //Check if Channel exists
-        require(channels[channel_id].state.channel_id == channel_id, "Channel does not exist");
-
-        //Check if Caller is part of the given Channel
-        //TODO == funktioniert nicht für Typ address
-        require(channels[channel_id].params.participant_a.addresse == caller || channels[channel_id].params.participant_b.addresse == caller, "Caller is not part of the given Channel");
-
-        //Define if Caller is A or B 
-        if(channels[channel_id].params.participant_b.addresse == caller) callerIsA = true;
-        
-        //Check if Caller has enough Money, if True Transaktion is carried out
-        if(callerIsA){
-            require(channels[channel_id].state.balance_A >= amount, "Balance in Channel is not enough");
-
-            channels[channel_id].state.balance_A -= amount;
-            channels[channel_id].state.balance_B += amount; 
-
-        }
-        else{
-            require(channels[channel_id].state.balance_B >= amount, "Balance in Channel is not enough");
-
-            channels[channel_id].state.balance_B -= amount;
-            channels[channel_id].state.balance_A += amount; 
-        }
-
-        //Finalized is false, because State of Channel has changed 
-        channels[channel_id].state.finalized_a = false;
-        channels[channel_id].state.finalized_b = false;
-
-        //Increase of Version Number 
-        channels[channel_id].state.version_num ++;
-    }
-
-      // Update Contract_Balance with the amount
-    function updateContractBalance(int channel_id) public {
-        Contract_Balance = Contract_Balance + channels[channel_id].state.balance_A + channels[channel_id].state.balance_B;
     }
     
     /**
-     * @dev Closes the channel and pays out the balance of the caller
-     *      and updates the balance of either participant_a or participant_b depending on the caller 
-     *      sets finalized_a and finalized_b to true deletes the channel from the data structure
-     * @param channel_id The id of the channel
-     * @param caller The address of the caller
-     */
-    function close(int channel_id, address caller) public {
-        // Checks existence of channel
-        require(channels[channel_id].state.channel_id == channel_id, "Channel does not exist");
+    * @dev Closes the channel and pays out the balance of the caller
+    * @param channel_id The id of the channel
+    */
+    function close(int channel_id) public {
+        Channel storage channel = channels[channel_id];
+
+        // Check if channel exists
+        require(channel.state.channel_id == channel_id, "Channel does not exist");
 
         // Check if Caller is part of the given Channel
-        require(channels[channel_id].params.participant_a.addresse == caller ||
-                channels[channel_id].params.participant_b.addresse == caller,
-                "Caller is not a participant of the given channel");
+        require(channel.params.participant_a.addresse == msg.sender || channel.params.participant_b.addresse == msg.sender,
+            "Caller is not a participant of the given channel");
 
-        // Checks whether the channel has been finalised
-        require(channels[channel_id].state.finalized_a == false &&
-                channels[channel_id].state.finalized_b == false,
-                "Channel is already finalised");
+        // Checks whether the channel has been finalized
+        require(!channel.state.finalized, "Channel is already finalised");
 
-        // Pay out Balances 
-        if (channels[channel_id].params.participant_a.addresse == caller) {
-            // Caller ist participant A
-            channels[channel_id].params.participant_a.addresse.transfer(channels[channel_id].state.balance_A);
+        // Determine the participant and the corresponding balance
+        address payable participantAddress;
+        uint256 amountToTransfer;
+
+        if (channel.params.participant_a.addresse == msg.sender) {
+            // Caller is participant A
+            participantAddress = channel.params.participant_a.addresse;
+            amountToTransfer = channel.state.balance_A;
         } else {
-            // Caller ist participant B
-            channels[channel_id].params.participant_b.addresse.transfer(channels[channel_id].state.balance_B);
+            // Caller is participant B
+            participantAddress = channel.params.participant_b.addresse;
+            amountToTransfer = channel.state.balance_B;
         }
 
-    //Calling this means that you are d'accord with how the trade went and are okay with ending the trade here
+        // Check if there is a balance to transfer
+        require(amountToTransfer > 0, "Nothing to transfer");
+
+        // Log information
+        console.log("Transferring %s to %s", amountToTransfer, participantAddress);
+        console.log(address(this).balance);
+        console.log(participantAddress.balance);
+
+        // Transfer funds
+        (bool transferSuccess, bytes memory data) = participantAddress.call{value: amountToTransfer}("");
+        
+        // Log transfer result
+        console.log("Transfer success: %s", transferSuccess);
+        console.log(participantAddress.balance);
+
+        //console.log("Transfer data: %s", data);
+        // Check if the transfer was successful
+        require(transferSuccess, "Transfer failed");
+
+        // Update state
+        if (participantAddress == channel.params.participant_a.addresse) {
+            channel.state.balance_A = 0;
+        } else {
+            channel.state.balance_B = 0;
+        }
+    }
+
+
+    //TODO: Gibt nurnoch finalize als bool, wie wissen wir aber dass beide finalisiert haben? -> Das passiert ja offchain aber was geben sie dann zurück?
+    /**
+     * Calling this function means that you are d'accord with how the trade went and are okay with ending the trade here
+     * @param channel_id The id of the channel
+     */
     function finalize(int channel_id) public {
         require(channels[channel_id].params.participant_a.addresse == msg.sender || channels[channel_id].params.participant_b.addresse == msg.sender, "Caller is not part of the given Channel");
+        /*
         if(channels[channel_id].params.participant_a.addresse == msg.sender) {
             channels[channel_id].state.finalized_a = true;
         } else {
             channels[channel_id].state.finalized_b = true;
         }
+        */
+        channels[channel_id].state.finalized = true;
     }
     
 
