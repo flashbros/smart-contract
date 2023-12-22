@@ -1,6 +1,7 @@
 const { expect } = require("chai");
 const { setBalance } = require("@nomicfoundation/hardhat-network-helpers");
 const { getContractAddress } = require('@ethersproject/address')
+const { ethers } = require("hardhat")
 
 describe("Token contract", function () {
   it("Deployment should assign the total supply of tokens to the owner", async function () {
@@ -93,7 +94,7 @@ describe("FlashLoan - fund method", function () {
     
 
     // Fund the channel by participant A
-    const txA = await flashLoan.connect(participantA).fund(channel_id, amount);
+    const txA = await flashLoan.connect(participantA).fund(channel_id, amount, {value: ethers.parseEther(amount.toString())});
     await txA.wait();
 
     // Check the channel state after participant A's funding
@@ -110,7 +111,7 @@ describe("FlashLoan - fund method", function () {
     expect(channel_B.control.funded_b).to.be.false;
 
     // Fund the channel by participant B
-    const txB = await flashLoan.connect(participantB).fund(channel_id, amount);
+    const txB = await flashLoan.connect(participantB).fund(channel_id, amount, {value: ethers.parseEther(amount.toString())});
     await txB.wait();
 
     // Check the final channel state after participant B's funding

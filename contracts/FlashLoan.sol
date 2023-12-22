@@ -99,7 +99,9 @@ contract FlashLoan {
         channels[state.channel_id] = channel;
     }
 
-    fallback () external payable {}
+    receive() external payable {
+        Contract_Balance += msg.value;
+    }
     
     /**
      * @dev Funds a channel with the given amount
@@ -121,10 +123,9 @@ contract FlashLoan {
             // Check if participant_a is not funded
             require(channel.control.funded_a == false, "Participant A already funded");
 
-            (bool sent, bytes memory data) = address(this).call{value: amount}("");
+            (bool sent, bytes memory data) = address(this).call{value: msg.value}("");
             require(sent, "Failed to send Ether");
             console.log(address(this).balance);
-
             // Update balance_A
             channel.state.balance_A += amount;
 
@@ -139,7 +140,7 @@ contract FlashLoan {
             // Check if participant_b is not funded
             require(channel.control.funded_b == false, "Participant B already funded");
 
-            (bool sent, bytes memory data) = address(this).call{value: amount}("");
+            (bool sent, bytes memory data) = address(this).call{value: msg.value}("");
             require(sent, "Failed to send Ether");
             console.log(address(this).balance);
 
