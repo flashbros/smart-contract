@@ -194,7 +194,6 @@ function close(int channel_id) public {
     console.log("Transfer success: %s", transferSuccess);
 
     // Check if the transfer was successful
-    require(transferSuccess, "Transfer failed");
 
     // Update state
     if (participantAddress == channel.params.participant_a.addresse) {

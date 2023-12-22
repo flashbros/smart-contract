@@ -163,7 +163,7 @@ describe("FlashLoan - close method", function () {
 
     // Check if the balances are updated for participant A and B
     const finalBalanceA = await participantA.getBalance();
-    const finalBalanceB = await participantB.getBalance();
+    const finalBalanceB = await flashLoan.
 
     // Participant A should receive their initial balance plus the balance from the channel
     const expectedBalanceA = initialBalanceA + finalChannel.state.balance_A;
