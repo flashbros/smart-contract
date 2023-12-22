@@ -1,6 +1,6 @@
 //SPDX-License-Identifier: UNLICENSED
 
-pragma solidity ^0.8.0; //todo: which version do we need? - 0.8.23 is the latest
+pragma solidity ^0.8.19; //todo: which version do we need? - 0.8.23 is the latest, 0.8.19 is in the hardhat.config.js file
 
 // Interfaces
 interface FlashBorrower {
