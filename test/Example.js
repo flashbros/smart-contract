@@ -138,12 +138,6 @@ describe("FlashLoan - close method", function () {
     const initialBalanceA = 200;
     const initialBalanceB = 300;
 
-    const transactionCount = await owner.getTransactionCount();
-
-    const futureAddress = getContractAddress({
-      from: owner.address,
-      nonce: transactionCount
-    });
 
     // Open a new channel with initial balances
     await flashLoan.connect(owner).open(
