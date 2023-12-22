@@ -18,7 +18,7 @@ interface FlashBorrower {
 // Define Participant
 struct Participant {
     address payable addresse;
-    bytes32 pubKey;
+    //bytes32 pubKey;
 }
 
 // Define Channel State
@@ -109,6 +109,7 @@ contract FlashLoan {
      *      and updates the balance of either participant_a or participant_b depending on the caller 
      * @param channel_id The id of the channel
      * @param amount The amount to fund the channel with
+     * @dev Oli Moritz Louis
      */
     function fund (int channel_id, uint256 amount) public payable {
         Channel storage channel = channels[channel_id];
@@ -205,7 +206,6 @@ contract FlashLoan {
         console.log("Transfer success: %s", transferSuccess);
         console.log(participantAddress.balance);
 
-        //console.log("Transfer data: %s", data);
         // Check if the transfer was successful
         require(transferSuccess, "Transfer failed");
 
