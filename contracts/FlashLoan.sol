@@ -106,7 +106,6 @@ contract FlashLoan {
      * @param amount The amount to fund the channel with
      */
     function fund (int channel_id, uint256 amount) public {
-
         Channel storage channel = channels[channel_id];
 
         // Check if channel exists
@@ -148,65 +147,63 @@ contract FlashLoan {
         }
     }
     
-    event DebugTransfer(address indexed from, address indexed to, uint256 amount, bool success);
+    /**
+    * @dev Closes the channel and pays out the balance of the caller
+    * @param channel_id The id of the channel
+    */
+    function close(int channel_id) public {
+        Channel storage channel = channels[channel_id];
 
-/**
- * @dev Closes the channel and pays out the balance of the caller
- * @param channel_id The id of the channel
- */
-function close(int channel_id) public {
-    Channel storage channel = channels[channel_id];
+        // Check if channel exists
+        require(channel.state.channel_id == channel_id, "Channel does not exist");
 
-    // Check if channel exists
-    require(channel.state.channel_id == channel_id, "Channel does not exist");
+        // Check if Caller is part of the given Channel
+        require(channel.params.participant_a.addresse == msg.sender || channel.params.participant_b.addresse == msg.sender,
+            "Caller is not a participant of the given channel");
 
-    // Check if Caller is part of the given Channel
-    require(channel.params.participant_a.addresse == msg.sender || channel.params.participant_b.addresse == msg.sender,
-        "Caller is not a participant of the given channel");
+        // Checks whether the channel has been finalized
+        require(!channel.state.finalized, "Channel is already finalised");
 
-    // Checks whether the channel has been finalized
-    require(!channel.state.finalized, "Channel is already finalised");
+        // Determine the participant and the corresponding balance
+        address payable participantAddress;
+        uint256 amountToTransfer;
 
-    // Determine the participant and the corresponding balance
-    address payable participantAddress;
-    uint256 amountToTransfer;
+        if (channel.params.participant_a.addresse == msg.sender) {
+            // Caller is participant A
+            participantAddress = channel.params.participant_a.addresse;
+            amountToTransfer = channel.state.balance_A;
+        } else {
+            // Caller is participant B
+            participantAddress = channel.params.participant_b.addresse;
+            amountToTransfer = channel.state.balance_B;
+        }
 
-    if (channel.params.participant_a.addresse == msg.sender) {
-        // Caller is participant A
-        participantAddress = channel.params.participant_a.addresse;
-        amountToTransfer = channel.state.balance_A;
-    } else {
-        // Caller is participant B
-        participantAddress = channel.params.participant_b.addresse;
-        amountToTransfer = channel.state.balance_B;
+        // Check if there is a balance to transfer
+        require(amountToTransfer > 0, "Nothing to transfer");
+
+        // Log information
+        console.log("Transferring %s to %s", amountToTransfer, participantAddress);
+        console.log(address(this).balance);
+        console.log(participantAddress.balance);
+
+        // Transfer funds
+        (bool transferSuccess, bytes memory data) = participantAddress.call{value: amountToTransfer}("");
+        
+        // Log transfer result
+        console.log("Transfer success: %s", transferSuccess);
+        console.log(participantAddress.balance);
+
+        //console.log("Transfer data: %s", data);
+        // Check if the transfer was successful
+        require(transferSuccess, "Transfer failed");
+
+        // Update state
+        if (participantAddress == channel.params.participant_a.addresse) {
+            channel.state.balance_A = 0;
+        } else {
+            channel.state.balance_B = 0;
+        }
     }
-
-    // Check if there is a balance to transfer
-    require(amountToTransfer > 0, "Nothing to transfer");
-
-    // Log information
-    console.log("Transferring %s to %s", amountToTransfer, participantAddress);
-
-    // Transfer funds
-    bool transferSuccess = attemptTransfer(participantAddress, amountToTransfer);
-
-    // Log transfer result
-    console.log("Transfer success: %s", transferSuccess);
-
-    // Check if the transfer was successful
-
-    // Update state
-    if (participantAddress == channel.params.participant_a.addresse) {
-        channel.state.balance_A = 0;
-    } else {
-        channel.state.balance_B = 0;
-    }
-}
-
-function attemptTransfer(address payable recipient, uint256 amount) internal returns (bool) {
-    (bool success, ) = recipient.call{value: amount}("");
-    return success;
-}
 
 
     //TODO: Gibt nurnoch finalize als bool, wie wissen wir aber dass beide finalisiert haben? -> Das passiert ja offchain aber was geben sie dann zurück?
