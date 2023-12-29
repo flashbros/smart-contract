@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "Install Modules": "npm i && exit 1",
     "Compile Contracts": "npx hardhat compile && exit 1",
     "Execute Tests": "npx hardhat test && exit 1"
   },
