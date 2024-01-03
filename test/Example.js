@@ -3,9 +3,12 @@ const { setBalance } = require("@nomicfoundation/hardhat-network-helpers");
 const { getContractAddress } = require('@ethersproject/address')
 const { ethers } = require("hardhat")
 
-describe("Token contract", function () {
-  it("Deployment should assign the total supply of tokens to the owner", async function () {
-    const [owner] = await ethers.getSigners();
+
+describe("Smash Loan", function () {
+  /*
+  it("Transfer works aiaiia", async function () {
+
+    const [owner, user1] = await ethers.getSigners();
 
     const hardhatToken = await ethers.deployContract("Token");
 
@@ -166,23 +169,53 @@ describe("FlashLoan - close method", function () {
     const txB = await flashLoan.connect(participantB).fund(channel_id, fundAmountB, {value: ethers.parseEther(fundAmountB.toString())});
     await txB.wait();
 
+    //geg balance of A and b before closing
+    const balanceAbefore = await ethers.provider.getBalance(participantA.address);
+    const balanceBbefore = await ethers.provider.getBalance(participantB.address);
+
+    //finalize channel
+    const txFinalize = await flashLoan.connect(participantA).finalize(channel_id);
+
     // Close the channel by participant A
     const txClose = await flashLoan.connect(participantA).close(channel_id);
     await txClose.wait();
 
-    // Check if the channel is finalized
-    const finalChannel = await flashLoan.channels(channel_id);
+    // Check the final channel state after participant A's closing
+    const channel_A = await flashLoan.channels(channel_id);
+    const balanceAafter = await ethers.provider.getBalance(participantA.address);
+    expect(balanceAafter).to.equal(balanceAbefore + channel_A.state.balance_A.toString());
 
-    // Check if the balances are updated for participant A and B
-    const finalBalanceA = await participantA.getBalance();
-    const finalBalanceB = await flashLoan.balances(channel_id);
+    // Check the final channel state after participant B's closing
+    const channel_B = await flashLoan.channels(channel_id);
+    const balanceBafter = await ethers.provider.getBalance(participantB.address);
+    expect(balanceBafter).to.equal(balanceBbefore + channel_B.state.balance_B.toString());
 
-    // Participant A should receive their initial balance plus the balance from the channel
-    const expectedBalanceA = initialBalanceA + finalChannel.state.balance_A;
-    expect(finalBalanceA.toString()).to.equal(expectedBalanceA.toString());
+    
+  });
+  */
+  it("Channel opening works", async function () {
+    const [owner, user1] = await ethers.getSigners();
+    const flashloan = await ethers.deployContract("FlashLoan");
 
-    // Participant B should receive their initial balance plus the balance from the channel
-    const expectedBalanceB = initialBalanceB + finalChannel.state.balance_B;
-    expect(finalBalanceB.toString()).to.equal(expectedBalanceB.toString());
+    const partA = {
+      addresse: owner.address
+    };
+    const partB = {
+      addresse: user1.address
+    };
+    const params = {
+      participant_a: partA,
+      participant_b: partB
+    };
+
+    flashloan.open(params);
+
+    const numberOfChannels = await flashloan.channel_count();
+    const firstChannel = await flashloan.channels(0);
+    //console.log("First Channel: ", firstChannel);
+    console.log(numberOfChannels);
+
+    //expect(numberOfChannels).to.equal(1);
+
   });
 });

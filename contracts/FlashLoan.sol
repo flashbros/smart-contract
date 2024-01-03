@@ -1,6 +1,6 @@
 //SPDX-License-Identifier: UNLICENSED
 
-pragma solidity ^0.8.0; //todo: which version do we need? - 0.8.23 is the latest
+pragma solidity ^0.8.19; //todo: which version do we need? - 0.8.23 is the latest, 0.8.19 is in the hardhat.config.js file
 import "hardhat/console.sol";
 
 // Interfaces
@@ -18,7 +18,7 @@ interface FlashBorrower {
 // Define Participant
 struct Participant {
     address payable addresse;
-    bytes32 pubKey;
+    //bytes32 pubKey;
 }
 
 // Define Channel State
@@ -58,6 +58,16 @@ contract FlashLoan {
     // Variables
     uint256 public Contract_Balance = 0 ether;
 
+    Participant[] public participants;
+    
+    int public channel_count = 0;
+    int r = 0;
+
+    //Events
+    event NewTransaction(uint indexed transactionId, address sender, address receiver, uint amount);
+    event PartyFinalized(int channel_id, address party);
+
+   
     // Mapping: Channel_ID => Channel
     mapping(int => Channel) public channels;
 
@@ -112,6 +122,7 @@ contract FlashLoan {
      *      and updates the balance of either participant_a or participant_b depending on the caller 
      * @param channel_id The id of the channel
      * @param amount The amount to fund the channel with
+     * @dev Oli Moritz Louis
      */
     function fund (int channel_id, uint256 amount) public payable {
         Channel storage channel = channels[channel_id];
@@ -177,71 +188,72 @@ contract FlashLoan {
             "Caller is not a participant of the given channel");
 
         // Checks whether the channel has been finalized
-        require(!channel.state.finalized, "Channel is already finalised");
+        require(channel.state.finalized, "Channel is not yet finalised");
 
         // Determine the participant and the corresponding balance
         address payable participantAddress;
         uint256 amountToTransfer;
 
-        if (channel.params.participant_a.addresse == msg.sender) {
-            // Caller is participant A
-            participantAddress = channel.params.participant_a.addresse;
-            amountToTransfer = channel.state.balance_A;
-        } else {
-            // Caller is participant B
-            participantAddress = channel.params.participant_b.addresse;
-            amountToTransfer = channel.state.balance_B;
-        }
 
         // Check if there is a balance to transfer
+        //TODO find out how to user Contract as sender
         require(amountToTransfer > 0, "Nothing to transfer");
+        if(channels[channel_id].state.balance_A > 0){
+            amountToTransfer = channels[channel_id].state.balance_A;
+            (bool transferSuccess, bytes memory data) = channel.params.participant_a.addresse.call{value: amountToTransfer}("");
+            require(transferSuccess, "Transfer failed");
+        }
 
-        // Log information
-        console.log("Transferring %s to %s", amountToTransfer, participantAddress);
-        console.log(address(this).balance);
-        console.log(participantAddress.balance);
-
-        // Transfer funds
-        (bool transferSuccess, bytes memory data) = participantAddress.call{value: amountToTransfer}("");
+        if(channels[channel_id].state.balance_B > 0){
+            amountToTransfer = channels[channel_id].state.balance_B;
+            (bool transferSuccess, bytes memory data) = channel.params.participant_b.addresse.call{value: amountToTransfer}("");
+            require(transferSuccess, "Transfer failed");
+        }
         
-        // Log transfer result
-        console.log("Transfer success: %s", transferSuccess);
-        console.log(participantAddress.balance);
 
-        //console.log("Transfer data: %s", data);
-        // Check if the transfer was successful
-        require(transferSuccess, "Transfer failed");
+
+        //Increase of Version Number 
+        channels[channel_id].state.version_num ++;
+
+        if(callerIsA) {
+            emit NewTransaction(1, msg.sender, channels[channel_id].params.participant_b.addresse, amount);
+        } else {
+            emit NewTransaction(1, msg.sender, channels[channel_id].params.participant_a.addresse, amount);
 
         // Update state
+        //TODO später vielleicht eh channel löschen
         if (participantAddress == channel.params.participant_a.addresse) {
             channel.state.balance_A = 0;
         } else {
             channel.state.balance_B = 0;
+
         }
     }
 
-
-    /**
-     * Calling this function means that you are d'accord with how the trade went and are okay with ending the trade here
-     * @param newState The new state of the channel
-     * @param sigA The signature of participant_a
-     * @param sigB The signature of participant_b
-     */
-    function finalize(Channel_State calldata newState, bytes32 sigA, bytes32 sigB) public {
-        //Einfache Implementation dass es erstmal läuft aber keine überprüffung der Signaturen 
+    //Calling this means that you are d'accord with how the trade went and are okay with ending the trade here
+    function finalize(int channel_id) public {
+        require(channels[channel_id].params.participant_a.addresse == msg.sender || channels[channel_id].params.participant_b.addresse == msg.sender, "Caller is not part of the given Channel");
+        if(channels[channel_id].params.participant_a.addresse == msg.sender) {
+            channels[channel_id].state.finalized_a = true;
+        } else {
+            channels[channel_id].state.finalized_b = true;
+        }
+        emit PartyFinalized(channel_id, msg.sender);
 
         // Check if channel exists
-        require(channels[newState.channel_id].state.channel_id == newState.channel_id, "Channel does not exist");
+        //require(channels[newState.channel_id].state.channel_id == newState.channel_id, "Channel does not exist");
         //Check if channel is not finalized
-        require(channels[newState.channel_id].state.finalized == false, "Channel is already finalized");
+        //require(channels[newState.channel_id].state.finalized == false, "Channel is already finalized");
         //Check if new Channel is finalized
-        require(newState.finalized == true, "New Channel is not finalized");
+        //require(newState.finalized == true, "New Channel is not finalized");
         
         //Hier müsste dann die Überprüfung der Signaturen stattfinden
 
         // Set new state
-        channels[newState.channel_id].state = newState;
-        
+        //channels[newState.channel_id].state = newState;
+        //kurzer Test ob es funktioniert
+
+        channels[channel_id].state.finalized = true;
 
         //Ideen wie man die Signautren überprüfen kann
         //Video hilfreich: https://www.youtube.com/watch?v=ZcmQ92vBLgg
@@ -275,6 +287,7 @@ contract FlashLoan {
         channels[newState.channel_id].state = newState;
 
         */
+
     }
     
 
