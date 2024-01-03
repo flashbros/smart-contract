@@ -10,6 +10,7 @@
   "author": "Moritz",
   "license": "ISC",
   "devDependencies": {
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.10",
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
     "hardhat": "^2.19.2"
   },
@@ -384,4 +385,6 @@
   "keywords": [
     "flashy"
   ]
+    "hardhat": "^2.19.1"
+  }
 }
