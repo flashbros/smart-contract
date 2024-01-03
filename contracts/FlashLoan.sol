@@ -10,7 +10,7 @@ interface FlashBorrower {
         int256 amount,
         int256 fee,
         bytes calldata data
-    ) external returns (bytes32);
+    ) external returns (bool);
 }
 
 // Stuct Section
@@ -52,6 +52,9 @@ struct Channel{
 // Contract Section
 
 contract FlashLoan {
+    // Constants
+    const int256 flashLoanFee = 0.1; // 10% fee
+
     // Variables
     uint256 public Contract_Balance = 0 ether;
 
@@ -64,7 +67,7 @@ contract FlashLoan {
     event NewTransaction(uint indexed transactionId, address sender, address receiver, uint amount);
     event PartyFinalized(int channel_id, address party);
 
-    
+   
     // Mapping: Channel_ID => Channel
     mapping(int => Channel) public channels;
 
@@ -295,6 +298,12 @@ contract FlashLoan {
     uint256 amount,
     bytes calldata data) external returns (bool) {
         
+        uint256 fee = amount * flashLoanFee;
+
+        
+
+        bool success = receiver.onFlashLoan(msg.sender, amount, fee, data) // Execute the FlashLoan
+        require(success, "FlashLoan failed");
 
         return true;
     }

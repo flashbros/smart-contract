@@ -4,6 +4,7 @@
   "description": "Stelle sicher, dass Node.js und npm auf dem System installiert ist. Wenn nicht, lade es auf der offiziellen [Node.js-Website](https://nodejs.org/) herunter und installiere es.",
   "main": "index.js",
   "scripts": {
+    "Install Modules": "npm i && exit 1",
     "Compile Contracts": "npx hardhat compile && exit 1",
     "Execute Tests": "npx hardhat test && exit 1"
   },
