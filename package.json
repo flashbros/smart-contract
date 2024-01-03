@@ -6,7 +6,9 @@
   "scripts": {
     "Install Modules": "npm i && exit 1",
     "Compile Contracts": "npx hardhat compile && exit 1",
-    "Execute Tests": "npx hardhat test && exit 1"
+    "Execute Tests": "npx hardhat test && exit 1",
+    "Start Node": "npx hardhat node",
+    "Deploy Contracts": "npx hardhat run scripts/deploy.js --network localhost && exit 1",
   },
   "author": "Moritz",
   "license": "ISC",
@@ -245,6 +247,7 @@
     "nanoid": "^3.3.3",
     "napi-macros": "^2.2.2",
     "neo-async": "^2.6.2",
+    "next": "^14.0.4",
     "node-addon-api": "^2.0.2",
     "node-emoji": "^1.11.0",
     "node-gyp-build": "^4.7.1",
@@ -386,6 +389,4 @@
   "keywords": [
     "flashy"
   ]
-    "hardhat": "^2.19.1"
-  }
 }
