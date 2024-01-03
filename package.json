@@ -8,9 +8,9 @@
     "Compile Contracts": "npx hardhat compile && exit 1",
     "Execute Tests": "npx hardhat test && exit 1",
     "Start Node": "npx hardhat node",
-    "Deploy Contracts": "npx hardhat run scripts/deploy.js --network localhost && exit 1",
+    "Deploy Contracts": "npx hardhat run scripts/deploy.js --network localhost && exit 1"
   },
-  "author": "Moritz",
+  "author": "FlashBros",
   "license": "ISC",
   "devDependencies": {
     "@nomicfoundation/hardhat-network-helpers": "^1.0.10",

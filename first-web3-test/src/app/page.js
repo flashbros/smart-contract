@@ -1,10 +1,8 @@
 "use client";
 
-import Image from 'next/image'
-import styles from './page.module.css'
 import { useEffect, useState } from "react";
 import { getContract } from "../../../ethereum.js";
-import FlashLoan from "../../../contracts/FlashLoan.json";
+import ChannelLogic from "../../../contracts/ChannelLogic.json";
 
 export default function Home() {
 
@@ -15,10 +13,11 @@ export default function Home() {
     async function initContract() {
       const contract = getContract(
         "0x5fbdb2315678afecb367f032d93f642f64180aa3",
-        FlashLoan.abi,
+        ChannelLogic.abi,
         0 // Use the first account as the signer
       );
       setContract(contract);
+      
       }
       initContract();
   }, []);
@@ -29,27 +28,10 @@ export default function Home() {
   }
 
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-      </div>
-
+    <main>
+      
       <div>
         <h1>Channels: { showch }</h1>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
       </div>
 
     </main>
