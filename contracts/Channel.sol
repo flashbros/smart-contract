@@ -231,15 +231,17 @@ contract Channel {
     }
 
     //Calling this means that you are d'accord with how the trade went and are okay with ending the trade here
-    function finalize(int channel_id) public {
+    function finalize(Channel_State calldata newState) public {
         //Einfache Implementation dass es erstmal läuft aber keine überprüffung der Signaturen 
 
         // Check if channel exists
-        //require(channels[newState.channel_id].state.channel_id == newState.channel_id, "Channel does not exist");
+        require(channels[newState.channel_id].state.channel_id == newState.channel_id, "Channel does not exist");
         //Check if channel is not finalized
-        //require(channels[newState.channel_id].state.finalized == false, "Channel is already finalized");
+        require(channels[newState.channel_id].state.finalized == false, "Channel is already finalized");
         //Check if new Channel is finalized
-        //require(newState.finalized == true, "New Channel is not finalized");
+        require(newState.finalized == true, "New Channel is not finalized");
+        //Check if Version Number is increased
+        require(newState.verion_num > channels[newState.channel_id].state.version_num, "Verion Number is not increased");
         
         //Hier müsste dann die Überprüfung der Signaturen stattfinden
 
