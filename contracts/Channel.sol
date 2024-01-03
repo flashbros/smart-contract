@@ -232,13 +232,7 @@ contract Channel {
 
     //Calling this means that you are d'accord with how the trade went and are okay with ending the trade here
     function finalize(int channel_id) public {
-        require(channels[channel_id].params.participant_a.addresse == msg.sender || channels[channel_id].params.participant_b.addresse == msg.sender, "Caller is not part of the given Channel");
-        if(channels[channel_id].params.participant_a.addresse == msg.sender) {
-            channels[channel_id].state.finalized_a = true;
-        } else {
-            channels[channel_id].state.finalized_b = true;
-        }
-        emit PartyFinalized(channel_id, msg.sender);
+        //Einfache Implementation dass es erstmal läuft aber keine überprüffung der Signaturen 
 
         // Check if channel exists
         //require(channels[newState.channel_id].state.channel_id == newState.channel_id, "Channel does not exist");
@@ -287,7 +281,6 @@ contract Channel {
         channels[newState.channel_id].state = newState;
 
         */
-
     }
     
 
