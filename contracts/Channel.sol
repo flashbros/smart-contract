@@ -51,7 +51,7 @@ struct Channel{
 
 // Contract Section
 
-contract FlashLoan {
+contract Channel {
     // Constants
     const int256 flashLoanFee = 0.1; // 10% fee
 
