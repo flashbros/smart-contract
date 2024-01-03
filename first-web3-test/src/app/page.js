@@ -13,7 +13,7 @@ export default function Home() {
           ChannelLogic.abi,
           0 // Use the first account as the signer
         );
-        const ch = await contract;
+        const ch = await contract.channelCount();
         console.log(ch);
         }
      
