@@ -1,6 +1,6 @@
 //SPDX-License-Identifier: UNLICENSED
 
-pragma solidity ^0.8.0; //todo: which version do we need? - 0.8.23 is the latest
+pragma solidity ^0.8.19; //todo: which version do we need? - 0.8.23 is the latest, 0.8.19 is in the hardhat.config.js file
 import "hardhat/console.sol";
 
 // Interfaces
@@ -54,6 +54,16 @@ struct Channel{
 contract FlashLoan {
     // Variables
     uint256 public Contract_Balance = 0 ether;
+
+    Participant[] public participants;
+    
+    int public channel_count = 0;
+    int r = 0;
+
+    //Events
+    event NewTransaction(uint indexed transactionId, address sender, address receiver, uint amount);
+    event PartyFinalized(int channel_id, address party);
+
     
     // Mapping: Channel_ID => Channel
     mapping(int => Channel) public channels;
@@ -198,19 +208,34 @@ contract FlashLoan {
         }
         
 
+
+        //Increase of Version Number 
+        channels[channel_id].state.version_num ++;
+
+        if(callerIsA) {
+            emit NewTransaction(1, msg.sender, channels[channel_id].params.participant_b.addresse, amount);
+        } else {
+            emit NewTransaction(1, msg.sender, channels[channel_id].params.participant_a.addresse, amount);
+
         // Update state
         //TODO später vielleicht eh channel löschen
         if (participantAddress == channel.params.participant_a.addresse) {
             channel.state.balance_A = 0;
         } else {
             channel.state.balance_B = 0;
+
         }
     }
 
-
-    
-    function finalize(int  channel_id) public {
-        //Einfache Implementation dass es erstmal läuft aber keine überprüffung der Signaturen 
+    //Calling this means that you are d'accord with how the trade went and are okay with ending the trade here
+    function finalize(int channel_id) public {
+        require(channels[channel_id].params.participant_a.addresse == msg.sender || channels[channel_id].params.participant_b.addresse == msg.sender, "Caller is not part of the given Channel");
+        if(channels[channel_id].params.participant_a.addresse == msg.sender) {
+            channels[channel_id].state.finalized_a = true;
+        } else {
+            channels[channel_id].state.finalized_b = true;
+        }
+        emit PartyFinalized(channel_id, msg.sender);
 
         // Check if channel exists
         //require(channels[newState.channel_id].state.channel_id == newState.channel_id, "Channel does not exist");
@@ -259,6 +284,7 @@ contract FlashLoan {
         channels[newState.channel_id].state = newState;
 
         */
+
     }
     
 
