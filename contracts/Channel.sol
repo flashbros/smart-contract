@@ -246,10 +246,7 @@ contract Channel {
         //Hier müsste dann die Überprüfung der Signaturen stattfinden
 
         // Set new state
-        //channels[newState.channel_id].state = newState;
-        //kurzer Test ob es funktioniert
-
-        channels[channel_id].state.finalized = true;
+        channels[newState.channel_id].state = newState;
 
         //Ideen wie man die Signautren überprüfen kann
         //Video hilfreich: https://www.youtube.com/watch?v=ZcmQ92vBLgg
