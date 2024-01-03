@@ -9,14 +9,14 @@ export const getProvider = () => {
   return localProvider;
 };
 
-export const getSigner = (index = 0) => {
+export const getSigner = async (index = 0) => {
   const provider = getProvider();
-  const signer = provider.getSigner(index);
+  const signer = await provider.getSigner(index);
   return signer;
 };
 
-export const getContract = (address, abi, signerIndex) => {
-  const signer = getSigner(signerIndex);
+export const getContract = async (address, abi, signerIndex) => {
+  const signer = await getSigner(signerIndex);
   const contract = new ethers.Contract(address, abi, signer);
   return contract;
 };

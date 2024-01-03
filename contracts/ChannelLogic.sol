@@ -74,12 +74,17 @@ contract ChannelLogic {
     // Mapping: Channel_ID => Balance
     mapping(int => uint256) public balances;
 
+    function channelCount() public view returns (int) {
+        return channel_count;
+    }   
+
     // Compare two Participants
     function compareParticipants(Participant memory a, Participant memory b) private pure returns (bool) {
         return a.addresse == b.addresse;
     }
 
     // Channel Section
+
 
     /**
      * @dev Opens a new channel between two participants 
