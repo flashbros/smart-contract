@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { getContract, getSigner } from "../../../ethereum.js";
 import ChannelLogic from "../../../contracts/ChannelLogic.json";
+import { get } from "lodash";
+import { use } from "chai";
 
 export default function Home() {
   const [contract, setContract] = useState(null); // The contract object
@@ -13,10 +15,12 @@ export default function Home() {
       ChannelLogic.abi,
       0 // Use the first account as the signer
     );
-    setContract(cont);
+    
+   
+     setContract(cont);
   }, []);
 
-  const dooo = async () => {
+  const getCount = async () => {
     try {
       const ch = await (await contract).channelCount();
       console.log(ch.toNumber());
@@ -26,7 +30,7 @@ export default function Home() {
     }
   };
 
-  const dooo2 = async () => {
+  const openChan = async () => {
     try {
       const Channel_Params = {
         participant_a: {
@@ -55,8 +59,8 @@ export default function Home() {
   return (
     <main>
       <div>
-        <button onClick={dooo}>Get Count</button>
-        <button onClick={dooo2}>Open Chan</button>
+        <button onClick={getCount}>Get Count</button>
+        <button onClick={openChan}>Open Chan</button>
         <p>Channel Count: {channelCount}</p>
       </div>
     </main>

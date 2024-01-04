@@ -64,6 +64,7 @@ contract ChannelLogic {
     int r = 0;
 
     //Events
+    event ChannelOpen();
     event NewTransaction(uint indexed transactionId, address sender, address receiver, uint amount);
     event PartyFinalized(int channel_id, address party);
 
@@ -118,6 +119,9 @@ contract ChannelLogic {
 
         // Add Channel to channels
         channels[state.channel_id] = channel;
+
+        // Emit event
+        emit ChannelOpen();
     }
 
     receive() external payable {
