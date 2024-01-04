@@ -6,14 +6,17 @@
   "scripts": {
     "Install Modules": "npm i && exit 1",
     "Compile Contracts": "npx hardhat compile && exit 1",
-    "Execute Tests": "npx hardhat test && exit 1"
+    "Execute Tests": "npx hardhat test && exit 1",
+    "Start Node": "npx hardhat node",
+    "Deploy Contracts": "npx hardhat run scripts/deploy.js --network localhost && exit 1"
   },
-  "author": "Moritz",
+  "author": "FlashBros",
   "license": "ISC",
   "devDependencies": {
     "@nomicfoundation/hardhat-network-helpers": "^1.0.10",
-    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
-    "hardhat": "^2.19.2"
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "ethers": "^5.7.2",
+    "hardhat": "^2.19.4"
   },
   "directories": {
     "test": "test"
@@ -131,7 +134,6 @@
     "ethereum-cryptography": "^1.2.0",
     "ethereumjs-abi": "^0.6.8",
     "ethereumjs-util": "^6.2.1",
-    "ethers": "^6.9.0",
     "ethjs-unit": "^0.1.6",
     "ethjs-util": "^0.1.6",
     "evp_bytestokey": "^1.0.3",
@@ -245,6 +247,7 @@
     "nanoid": "^3.3.3",
     "napi-macros": "^2.2.2",
     "neo-async": "^2.6.2",
+    "next": "^14.0.4",
     "node-addon-api": "^2.0.2",
     "node-emoji": "^1.11.0",
     "node-gyp-build": "^4.7.1",
@@ -386,6 +389,4 @@
   "keywords": [
     "flashy"
   ]
-    "hardhat": "^2.19.1"
-  }
 }

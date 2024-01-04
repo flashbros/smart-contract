@@ -51,9 +51,9 @@ struct Channel{
 
 // Contract Section
 
-contract Channel {
+contract ChannelLogic {
     // Constants
-    const int256 flashLoanFee = 0.1; // 10% fee
+    int256 flashLoanFee = 1; // 10% fee
 
     // Variables
     uint256 public Contract_Balance = 0 ether;
@@ -74,12 +74,17 @@ contract Channel {
     // Mapping: Channel_ID => Balance
     mapping(int => uint256) public balances;
 
+    function channelCount() public view returns (int) {
+        return channel_count;
+    }   
+
     // Compare two Participants
     function compareParticipants(Participant memory a, Participant memory b) private pure returns (bool) {
         return a.addresse == b.addresse;
     }
 
     // Channel Section
+
 
     /**
      * @dev Opens a new channel between two participants 
@@ -177,9 +182,8 @@ contract Channel {
     * @dev Closes the channel and pays out the balance of the caller
     * @param channel_id The id of the channel
     */
-    function close(int channel_id) public {
+   function close(int channel_id) public {
         Channel storage channel = channels[channel_id];
-
         // Check if channel exists
         require(channel.state.channel_id == channel_id, "Channel does not exist");
 
@@ -209,16 +213,7 @@ contract Channel {
             (bool transferSuccess, bytes memory data) = channel.params.participant_b.addresse.call{value: amountToTransfer}("");
             require(transferSuccess, "Transfer failed");
         }
-        
 
-
-        //Increase of Version Number 
-        channels[channel_id].state.version_num ++;
-
-        if(callerIsA) {
-            emit NewTransaction(1, msg.sender, channels[channel_id].params.participant_b.addresse, amount);
-        } else {
-            emit NewTransaction(1, msg.sender, channels[channel_id].params.participant_a.addresse, amount);
 
         // Update state
         //TODO später vielleicht eh channel löschen
@@ -226,7 +221,6 @@ contract Channel {
             channel.state.balance_A = 0;
         } else {
             channel.state.balance_B = 0;
-
         }
     }
 
@@ -241,7 +235,7 @@ contract Channel {
         //Check if new Channel is finalized
         require(newState.finalized == true, "New Channel is not finalized");
         //Check if Version Number is increased
-        require(newState.verion_num > channels[newState.channel_id].state.version_num, "Verion Number is not increased");
+        require(newState.version_num > channels[newState.channel_id].state.version_num, "Version Number is not increased");
         
         //Hier müsste dann die Überprüfung der Signaturen stattfinden
 
@@ -281,6 +275,8 @@ contract Channel {
 
         */
     }
+
+  
     
 
     // FlashLoan Section
@@ -290,12 +286,12 @@ contract Channel {
     uint256 amount,
     bytes calldata data) external returns (bool) {
         
-        uint256 fee = amount * flashLoanFee;
+        //uint256 fee = amount * flashLoanFee;
 
         
 
-        bool success = receiver.onFlashLoan(msg.sender, amount, fee, data) // Execute the FlashLoan
-        require(success, "FlashLoan failed");
+        //bool success = receiver.onFlashLoan(msg.sender, amount, fee, data); // Execute the FlashLoan
+        //require(success, "FlashLoan failed");
 
         return true;
     }
