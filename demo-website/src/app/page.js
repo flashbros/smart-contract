@@ -16,6 +16,11 @@ export default function Home() {
       0 // Use the first account as the signer
     );
     
+    // Funktioniert nicjt :(((((((((((((((((
+    cont.on("ChannelOpen", (from, to, amount, event) => {
+      getCount();
+     });
+
    
      setContract(cont);
   }, []);
