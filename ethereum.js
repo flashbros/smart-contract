@@ -1,9 +1,7 @@
+const { ethers } = require("ethers");
+const { Contract } = ethers
 
-const { ethers, JsonRpcProvider } = require("ethers");
-
-const localProvider = new JsonRpcProvider(
-  "http://localhost:8545"
-);
+const localProvider = new ethers.providers.JsonRpcProvider()
 
 export const getProvider = () => {
   return localProvider;
@@ -17,6 +15,6 @@ export const getSigner = async (index = 0) => {
 
 export const getContract = async (address, abi, signerIndex) => {
   const signer = await getSigner(signerIndex);
-  const contract = new ethers.Contract(address, abi, signer);
+  const contract = new Contract(address, abi, signer);
   return contract;
 };

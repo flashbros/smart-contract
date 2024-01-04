@@ -7,9 +7,9 @@
 const hre = require("hardhat");
 
 async function main() {
-  const FlashLoan = await ethers.getContractFactory("ChannelLogic");
-  const flashLoan = await FlashLoan.deploy();
-  console.log("Contract deployed to:", flashLoan.address);
+  const ChannelLogic = await ethers.getContractFactory("ChannelLogic");
+  const cl = await ChannelLogic.deploy();
+  console.log("Contract deployed to:", cl.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
