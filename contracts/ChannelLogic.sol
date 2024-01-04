@@ -93,8 +93,7 @@ contract ChannelLogic {
      * @param state The state of the channel
      */
     function open(Channel_Params calldata params, Channel_State calldata state) public{
-        
-        //TODO: Channel abfrage richtig so? 
+
         // Check if channel already exists
         require(channels[state.channel_id].state.channel_id != state.channel_id, "Channel already exists");
 
@@ -113,6 +112,9 @@ contract ChannelLogic {
         channel.params = params;
         channel.control.funded_a = false;
         channel.control.funded_b = false;
+
+        // Increase channel_count
+        channel_count++;
 
         // Add Channel to channels
         channels[state.channel_id] = channel;
