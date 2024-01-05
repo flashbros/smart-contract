@@ -3,11 +3,12 @@ import { useState, useEffect } from "react";
 import { getContract, getSigner } from "../../../ethereum.js";
 import ChannelLogic from "../../../contracts/ChannelLogic.json";
 import { get } from "lodash";
-import { use } from "chai";
 
 export default function Home() {
+
   const [contract, setContract] = useState(null); // The contract object
   const [channelCount, setChannelCount] = useState(0);
+  const [eventTrigger, setTrigger] = useState(false);
 
   useEffect(() => {
     const cont = getContract(
@@ -15,19 +16,30 @@ export default function Home() {
       ChannelLogic.abi,
       0 // Use the first account as the signer
     );
-    
-    // Funktioniert nicjt :(((((((((((((((((
-    cont.on("ChannelOpen", (from, to, amount, event) => {
-      getCount();
-     });
 
-   
-     setContract(cont);
+    async function init() {
+      const conti = await cont;
+      setContract(conti);
+    }
+
+    init();
+  
   }, []);
+
+  useEffect(() => {
+    if (contract) {
+      getCount();
+      contract.removeAllListeners();
+      contract.on("ChannelOpen", () => {
+        console.log("ChannelOpen - Event");
+        getCount();
+      })
+    }
+  }, [contract]);
 
   const getCount = async () => {
     try {
-      const ch = await (await contract).channelCount();
+      const ch = await contract.channelCount();
       console.log(ch.toNumber());
       setChannelCount(ch.toNumber());
     } catch (error) {
@@ -53,9 +65,7 @@ export default function Home() {
         finalized: false,
       };
 
-      console.log(Channel_Params);
-
-      await (await contract).open(Channel_Params, Channel_State);
+      contract.open(Channel_Params, Channel_State);
     } catch (error) {
       console.log(error);
     }
