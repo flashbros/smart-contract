@@ -2,28 +2,22 @@
 import { useState, useEffect } from "react";
 import { getContract, getSigner } from "../../../ethereum.js";
 import ChannelLogic from "../../../contracts/ChannelLogic.json";
-import { get } from "lodash";
 
 export default function Home() {
-
   const [contract, setContract] = useState(null); // The contract object
   const [channelCount, setChannelCount] = useState(0);
-  const [eventTrigger, setTrigger] = useState(false);
 
   useEffect(() => {
-    const cont = getContract(
-      "0x5fbdb2315678afecb367f032d93f642f64180aa3",
-      ChannelLogic.abi,
-      0 // Use the first account as the signer
-    );
-
     async function init() {
-      const conti = await cont;
+      const conti = await getContract(
+        "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+        ChannelLogic.abi,
+        0 // Use the first account as the signer
+      );
       setContract(conti);
     }
 
     init();
-  
   }, []);
 
   useEffect(() => {
@@ -33,7 +27,7 @@ export default function Home() {
       contract.on("ChannelOpen", () => {
         console.log("ChannelOpen - Event");
         getCount();
-      })
+      });
     }
   }, [contract]);
 
