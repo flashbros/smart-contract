@@ -1,27 +1,34 @@
 // components/Box.js
+import React from 'react';
 import styled from 'styled-components';
 
 const BoxContainer = styled.div`
-  width: 250px; /* Increased width */
-  height: 120px; /* Increased height */
-  background-color: #3498db;
+  width: 300px;
+  height: 150px;
+  background-color: #3498db; /* Nice blueish color */
   margin: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+  border-radius: 15px;
   cursor: pointer;
   transition: background-color 0.3s;
-  font-family: 'Roboto', sans-serif; /* Use your desired font */
+  font-family: 'Roboto', sans-serif;
+  color: #fff; /* Text color */
 
   &:hover {
-    background-color: #2980b9;
+    background-color: #2c81ba; /* Darker blueish color on hover */
   }
 
   .emoji {
-    font-size: 24px;
-    margin-bottom: 8px;
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
   }
 `;
 
@@ -31,7 +38,7 @@ const Box = ({ text, link, emoji }) => (
       <span role="img" aria-label="emoji" className="emoji">
         {emoji}
       </span>
-      {text}
+      <div>{text}</div>
     </BoxContainer>
   </a>
 );
