@@ -28,6 +28,7 @@ struct Channel_State {
     uint balance_B;
     int version_num;
     bool finalized;
+    bool closed;
 }
 
 // Define Channel Params with Participants
@@ -40,6 +41,8 @@ struct Channel_Params{
 struct Channel_Control{
     bool funded_a;
     bool funded_b;
+    bool withdrawed_a;
+    bool withdrawed_b;
 }
 
 // Define Channel
@@ -132,56 +135,51 @@ contract ChannelLogic {
      * @dev Funds a channel with the given amount
      *      and updates the balance of either participant_a or participant_b depending on the caller 
      * @param channel_id The id of the channel
-     * @param amount The amount to fund the channel with
      * @dev Oli Moritz Louis
      */
-    function fund (int channel_id, uint256 amount) public payable {
+    function fund (int channel_id) public payable {
         Channel storage channel = channels[channel_id];
 
         // Check if channel exists
         require(channel.state.channel_id == channel_id, "Channel does not exist");
 
+        // Check if msg.sender is part of the channel
+        require(channel.params.participant_a.addresse == msg.sender || channel.params.participant_b.addresse == msg.sender, "Sender is not a participant of the given channel");
+
+        bool senderIsA = msg.sender == channel.params.participant_a.addresse;
+
+        // Check if msg.sender has not already funded yet
+        if(senderIsA) {
+            require(channel.control.funded_a == false, "Sender has already funded this channel");
+        } else {
+            require(channel.control.funded_b == false, "Sender has already funded this channel");
+        }
+
         // Check if channel is not finalized
         require(channel.state.finalized == false, "Channel is finalized");
 
-        // Check if caller is participant_a or participant_b
-        if (msg.sender == channel.params.participant_a.addresse){
-            // Check if participant_a is not funded
-            require(channel.control.funded_a == false, "Participant A already funded");
+        uint256 amount = msg.value;
 
-            (bool sent, bytes memory data) = address(this).call{value: msg.value}("");
-            require(sent, "Failed to send Ether");
-            console.log(address(this).balance);
-            // Update balance_A
-            channel.state.balance_A += amount;
+        // Check if funding is greater than zero
+        require(amount > 0 ether, "Cannot fund a channel with 0 Eth");
 
-            // Update funded_a
+
+        if(senderIsA) {
+            channel.state.balance_A = amount;
             channel.control.funded_a = true;
 
-            // Update balance of participant_a
-            channel.state.balance_A = amount;
-            
-        }
-        else if (msg.sender == channel.params.participant_b.addresse){
-            // Check if participant_b is not funded
-            require(channel.control.funded_b == false, "Participant B already funded");
-
-            (bool sent, bytes memory data) = address(this).call{value: msg.value}("");
-            require(sent, "Failed to send Ether");
-            console.log(address(this).balance);
-
-            // Update balance_B
-            channel.state.balance_B += amount;
-
-            // Update funded_b
+            // Log for tests, delete later
+            console.log("Participant A has successfully funded the channel with ", channel.state.balance_A);
+        } else {
+            channel.state.balance_B = amount;
             channel.control.funded_b = true;
 
-            // Update balance of participant_b
-            channel.state.balance_B = amount;
+            // Log for tests, delete later
+            console.log("Participant B has successfully funded the channel with ", channel.state.balance_B);
         }
-        else{
-            revert("Caller is not a participant");
-        }
+
+        // Log for tests, delete later
+        console.log("Their new balance is: ", address(msg.sender).balance);
     }
     
     /**
@@ -195,38 +193,65 @@ contract ChannelLogic {
 
         // Check if Caller is part of the given Channel
         require(channel.params.participant_a.addresse == msg.sender || channel.params.participant_b.addresse == msg.sender,
-            "Caller is not a participant of the given channel");
+            "Sender is not a participant of the given channel");
 
-        // Checks whether the channel has been finalized
+        // Check whether the channel has been finalized
         require(channel.state.finalized, "Channel is not yet finalised");
 
-        // Determine the participant and the corresponding balance
-        address payable participantAddress;
-        uint256 amountToTransfer;
+        // Check whether the channel has been closed already
+        require(!channel.state.closed, "Channel has already been closed, use withdraw instead");
 
+        // Determine the participant and the corresponding balance
+        bool senderIsA = msg.sender == channel.params.participant_a.addresse;
+        uint256 amountToTransfer = senderIsA ? channel.state.balance_A : channel.state.balance_B;
+
+        //Close Channel
+        channel.state.closed = true;
+
+        // Check if there is a balance to transfer and do the transfer
+        if(amountToTransfer > 0) {
+            if(senderIsA) {
+                channel.state.balance_A = 0;
+                (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
+                require(transferSuccess, "Transfer failed");
+            } else {
+                channel.state.balance_B = 0;
+                (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
+                require(transferSuccess, "Transfer failed");
+            }
+        }
+    }
+    /**
+    @dev Withdraws the balance of the caller if the channel has already been closed
+     */
+    function withdraw(int channel_id) public {
+        Channel storage channel = channels[channel_id];
+        // Check if channel exists
+        require(channel.state.channel_id == channel_id, "Channel does not exist");
+
+        // Check if Caller is part of the given Channel
+        require(channel.params.participant_a.addresse == msg.sender || channel.params.participant_b.addresse == msg.sender,
+            "Sender is not a participant of the given channel");
+
+        // Check whether the channel has been closed already
+        require(channel.state.closed, "Channel has not been closed yet, use close instead");
+
+        // Determine the participant and the corresponding balance
+        bool senderIsA = msg.sender == channel.params.participant_a.addresse;
+        uint256 amountToTransfer = senderIsA ? channel.state.balance_A : channel.state.balance_B;
 
         // Check if there is a balance to transfer
-        //TODO find out how to user Contract as sender
-        require(amountToTransfer > 0, "Nothing to transfer");
-        if(channels[channel_id].state.balance_A > 0){
-            amountToTransfer = channels[channel_id].state.balance_A;
-            (bool transferSuccess, bytes memory data) = channel.params.participant_a.addresse.call{value: amountToTransfer}("");
-            require(transferSuccess, "Transfer failed");
-        }
+        require(amountToTransfer > 0, "There is no balance for you in this channel to withdraw");
 
-        if(channels[channel_id].state.balance_B > 0){
-            amountToTransfer = channels[channel_id].state.balance_B;
-            (bool transferSuccess, bytes memory data) = channel.params.participant_b.addresse.call{value: amountToTransfer}("");
-            require(transferSuccess, "Transfer failed");
-        }
-
-
-        // Update state
-        //TODO später vielleicht eh channel löschen
-        if (participantAddress == channel.params.participant_a.addresse) {
+        // and do the transfer
+        if(senderIsA) {
             channel.state.balance_A = 0;
+            (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
+            require(transferSuccess, "Transfer failed");
         } else {
             channel.state.balance_B = 0;
+            (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
+            require(transferSuccess, "Transfer failed");
         }
     }
 
