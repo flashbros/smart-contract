@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { getContract, getSigner } from "../../../../ethereum.js";
 import ChannelLogic from "../../../../contracts/ChannelLogic.json";
+import { ethers } from "hardhat";
 
 export default function Home() {
   const [contract, setContract] = useState(null); // The contract object
