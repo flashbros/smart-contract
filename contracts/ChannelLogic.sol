@@ -185,6 +185,7 @@ contract ChannelLogic {
     /**
     * @dev Closes the channel and pays out the balance of the caller
     * @param channel_id The id of the channel
+    * @dev Moritz
     */
    function close(int channel_id) public {
         Channel storage channel = channels[channel_id];
@@ -222,7 +223,9 @@ contract ChannelLogic {
         }
     }
     /**
-    @dev Withdraws the balance of the caller if the channel has already been closed
+    * @dev Withdraws the balance of the caller if the channel has already been closed
+    * @param channel_id The id of the channel
+    * @dev Moritz
      */
     function withdraw(int channel_id) public {
         Channel storage channel = channels[channel_id];
