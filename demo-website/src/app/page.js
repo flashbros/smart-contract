@@ -1,27 +1,34 @@
 "use client";
-import { getContract } from "../../../ethereum.js";
-import ChannelLogic from "../../../contracts/ChannelLogic.json";
+import styled from 'styled-components';
+import Box from './components/Box';
 
-export default function Home() {
-  const dooo = async () => {
-    const contract = getContract(
-      "0x5fbdb2315678afecb367f032d93f642f64180aa3",
-      ChannelLogic.abi,
-      0 // Use the first account as the signer
-    );
-    try {
-      const ch = await (await contract).channel_count();
-      console.log(ch.toNumber());
-    } catch (error) {
-      console.log(error);
-    }
-  };
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+`;
 
-  return (
-    <main>
-      <div>
-        <button onClick={dooo}>Init Contract</button>
-      </div>
-    </main>
-  );
-}
+const Title = styled.h1`
+  font-family: 'Roboto', sans-serif;
+  font-size: 32px;
+  margin-bottom: 20px;
+`;
+
+const BoxesContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const HomePage = () => (
+  <Container>
+    <Title>Choose your fighter</Title>
+    <BoxesContainer>
+      <Box text="Open a channel" link="/channels" emoji="⏰" />
+      <Box text="Get a flashloan" link="/flashloan" emoji="💰" />
+    </BoxesContainer>
+  </Container>
+);
+
+export default HomePage;
