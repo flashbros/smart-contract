@@ -76,7 +76,7 @@ contract ChannelLogic {
     mapping(int => Channel) public channels;
 
     // Mapping: Channel_ID => Balance
-    mapping(int => uint256) public balances;
+    mapping(int => uint256) public balances; //brauchen wir doch nicht oder?
 
     function channelCount() public view returns (int) {
         return channel_count;
@@ -126,11 +126,14 @@ contract ChannelLogic {
         // Emit event
         emit ChannelOpen();
     }
-
+    event ContractBalanceUpdated(uint256 newBalance);
     receive() external payable {
         Contract_Balance += msg.value;
+            emit ContractBalanceUpdated(Contract_Balance);
     }
     
+    event ChannelFunded(int indexed channel_id, address indexed participant, uint256 amount);
+
     /**
      * @dev Funds a channel with the given amount
      *      and updates the balance of either participant_a or participant_b depending on the caller 
@@ -170,17 +173,21 @@ contract ChannelLogic {
 
             // Log for tests, delete later
             console.log("Participant A has successfully funded the channel with ", channel.state.balance_A);
+                    emit ChannelFunded(channel_id, msg.sender, amount);
         } else {
             channel.state.balance_B = amount;
             channel.control.funded_b = true;
 
             // Log for tests, delete later
             console.log("Participant B has successfully funded the channel with ", channel.state.balance_B);
+                    emit ChannelFunded(channel_id, msg.sender, amount);
         }
 
         // Log for tests, delete later
         console.log("Their new balance is: ", address(msg.sender).balance);
     }
+
+
     
     /**
     * @dev Closes the channel and pays out the balance of the caller
