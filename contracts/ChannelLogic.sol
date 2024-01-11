@@ -131,7 +131,7 @@ contract ChannelLogic {
         Contract_Balance += msg.value;
             emit ContractBalanceUpdated(Contract_Balance);
     }
-    
+
     event ChannelFunded(int indexed channel_id, address indexed participant, uint256 amount);
 
     /**
@@ -266,9 +266,11 @@ contract ChannelLogic {
     }
 
     //Calling this means that you are d'accord with how the trade went and are okay with ending the trade here
-    function finalize(Channel_State calldata newState) public {
+    function finalize(/*Channel_State calldata newState*/ int  channel_id) public {
         //Einfache Implementation dass es erstmal läuft aber keine überprüffung der Signaturen 
+        Channel storage channel = channels[channel_id];
 
+        /*
         // Check if channel exists
         require(channels[newState.channel_id].state.channel_id == newState.channel_id, "Channel does not exist");
         //Check if channel is not finalized
@@ -277,11 +279,14 @@ contract ChannelLogic {
         require(newState.finalized == true, "New Channel is not finalized");
         //Check if Version Number is increased
         require(newState.version_num > channels[newState.channel_id].state.version_num, "Version Number is not increased");
-        
+        */
         //Hier müsste dann die Überprüfung der Signaturen stattfinden
 
+
+        channel.state.finalized = true;
+
         // Set new state
-        channels[newState.channel_id].state = newState;
+        //channels[newState.channel_id].state = newState;
 
         //Ideen wie man die Signautren überprüfen kann
         //Video hilfreich: https://www.youtube.com/watch?v=ZcmQ92vBLgg

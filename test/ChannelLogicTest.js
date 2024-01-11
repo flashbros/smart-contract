@@ -98,8 +98,9 @@ describe("FlashLoan - fund method", function () {
     expect(fundedChannel.control.funded_a).to.equal(true);
 
     // Check if the contract balance is updated
-    const contractBalance = await flashLoan.Contract_Balance();
-    expect(contractBalance.toString()).to.equal(fundAmount.toString());
+    const contractBalanceBefore = await ethers.provider.getBalance(flashLoan.address);
+    //const contractBalance = await flashLoan.Contract_Balance();
+    expect(contractBalanceBefore.toString()).to.equal(fundAmount.toString());
 
   });
 });
@@ -139,6 +140,7 @@ describe("FlashLoan - close method", function () {
     // Fund the channel
     const fundAmount = ethers.utils.parseEther("1"); // 1 Ether
     await flashLoan.connect(participantA).fund(channel_id, { value: fundAmount });
+    await flashLoan.connect(participantA).finalize(channel_id);
 
     // Get the initial balances before closing the channel
     const initialBalanceA = await participantA.getBalance();
@@ -164,23 +166,21 @@ describe("FlashLoan - close method", function () {
 });
 
 
-
 describe("FlashLoan - finalize method", function () {
   it("should set the finalized state to true when called", async function () {
-    const [owner, participantA, participantB] = await ethers.getSigners();
+    const [owner] = await ethers.getSigners();
     const FlashLoan = await ethers.getContractFactory("ChannelLogic");
     const flashLoan = await FlashLoan.deploy();
 
     const channel_id = 1;
-    const initialChannel = await flashLoan.channels(channel_id);
 
     // Parameters for the new channel
     const params = {
       participant_a: {
-        addresse: participantA.address,
+        addresse: owner.address, // Using the owner as a participant for simplicity
       },
       participant_b: {
-        addresse: participantB.address,
+        addresse: ethers.constants.AddressZero, // Using a placeholder address for participant B
       },
     };
 
@@ -196,20 +196,14 @@ describe("FlashLoan - finalize method", function () {
     await flashLoan.connect(owner).open(params, state);
 
     // Call the finalize method
-    // hier ist noch abhänig von der implementierung
-    await flashLoan.connect(owner).finalize({
-      channel_id: channel_id,
-      balance_A: 0,
-      balance_B: 0,
-      version_num: 1, // Increment the version_num to meet the requirements
-      finalized: true, // Setting finalized to true
-    });
+    await flashLoan.connect(owner).finalize(channel_id);
 
     // Check if the channel is finalized
     const finalizedChannel = await flashLoan.channels(channel_id);
     expect(finalizedChannel.state.finalized).to.equal(true);
   });
 });
+
 
 
 /*
