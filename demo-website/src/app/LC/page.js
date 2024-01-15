@@ -42,7 +42,7 @@ const FlashLoanButton = styled.button`
   padding: 12px; /* Slightly larger padding for better visibility */
   border: none;
   border-radius: 5px;
-  cursor: pointer;
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
   font-size: 16px;
   transition: background-color 0.3s;
   &:hover {
@@ -56,6 +56,7 @@ const InputBox = styled.input`
   font-size: 16px;
   margin-bottom: 20px;
   padding: 5px;
+  cursor: pointer;
 `;
 
 const BalanceBox = styled.div`
@@ -106,20 +107,22 @@ const UserButton = styled.button`
 const FlashLoanPage = () => {
   const [flashLoanAmount, setFlashLoanAmount] = useState('');
   const [buyResult, setBuyResult] = useState('');
+  const [balance, setBalance] = useState(1000);
+  const [flashLoanDisabled, setFlashLoanDisabled] = useState(false);
 
   const handleFlashLoanRequest = () => {
-    if (!flashLoanAmount) return;
+    if (!flashLoanAmount || flashLoanDisabled) return;
 
     // Logic to handle flash loan request, for example, updating balance, adding transaction, etc.
     // For simplicity, let's assume the flash loan is successful if an amount is provided.
-    setBuyResult('Flash loan request successful');
-    setFlashLoanAmount('');
+    setBalance((prevBalance) => prevBalance + parseFloat(flashLoanAmount));
+    setFlashLoanDisabled(true);
   };
 
   const handleBuy = () => {
     // Logic to handle the "BUY" button click, for example, randomly gaining or losing money.
-    const randomResult = Math.random() > 0.5 ? 'You gained money!' : 'You lost money!';
-    setBuyResult(randomResult);
+    const randomAmount = Math.random() * 200 - 100; // Random amount between -100 and 100
+    setBalance((prevBalance) => prevBalance + randomAmount);
   };
 
   const handleUserAction = (user, action) => {
@@ -133,15 +136,19 @@ const FlashLoanPage = () => {
       <LeftSide>
         <ContractBalanceBox>Contract Balance: $5000</ContractBalanceBox>
         <TopBox>
-          <BalanceBox>Balance: $1000</BalanceBox>
+          <BalanceBox>Balance: ${balance.toFixed(2)}</BalanceBox>
           <InputBox
             type="number"
             value={flashLoanAmount}
             onChange={(e) => setFlashLoanAmount(e.target.value)}
-            placeholder="Enter ETH amount"
+            placeholder="ETH amount"
+            onClick={() => setFlashLoanDisabled(false)}
           />
-          <FlashLoanButton onClick={handleFlashLoanRequest}>
-            {`Get Flash Loan with ${flashLoanAmount} ETH`}
+          <FlashLoanButton
+            disabled={flashLoanDisabled}
+            onClick={handleFlashLoanRequest}
+          >
+            Get Flash Loan
           </FlashLoanButton>
           {buyResult && (
             <>

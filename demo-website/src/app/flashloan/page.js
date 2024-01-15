@@ -1,71 +1,59 @@
-"use client"
-// components/EthRequestPage.js
-import React, { useState } from 'react';
-import styled from 'styled-components';
+'use client';
+// pages/index.js
+import { useState } from 'react';
+import FlashLoanRequest from '../components/FlashLoanRequest';
+import UserComponent from '../components/UserComponent';
+import styles from '../styles/styles.css';
 
-const EthRequestContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-`;
+const HomePage = () => {
+  const [contractBalance, setContractBalance] = useState(1000);
+  const [balanceOfC, setBalanceOfC] = useState(0);
+  const [flashLoanRequested, setFlashLoanRequested] = useState(false);
 
-const Title = styled.h1`
-  font-family: 'Roboto', sans-serif;
-  font-size: 32px;
-  margin-bottom: 20px;
-`;
-
-const InputBox = styled.input`
-  width: 200px;
-  height: 30px;
-  font-size: 16px;
-  margin-bottom: 20px;
-`;
-
-const Button = styled.button`
-  margin-bottom: 20px;
-`;
-
-const ResultMessage = styled.div`
-  font-size: 18px;
-  margin-top: 20px;
-  color: ${({ positive }) => (positive ? '#27ae60' : '#e74c3c')};
-  text-align: center;
-`;
-
-const EthRequestPage = () => {
-  const [ethAmount, setEthAmount] = useState('');
-  const [grantStatus, setGrantStatus] = useState(null);
-
-  const handleInputChange = (e) => {
-    setEthAmount(e.target.value);
-    setGrantStatus(null);
+  const handleFlashLoanRequest = (amount) => {
+    if (!flashLoanRequested && amount <= contractBalance) {
+      setBalanceOfC(balanceOfC + parseInt(amount));
+      setFlashLoanRequested(true);
+    }
   };
 
-  const handleGrantRequest = () => {
-    const isGranted = parseFloat(ethAmount) < 10;
-    setGrantStatus(isGranted);
+  const handleTrade = (isAddition, randomAmount) => {
+    // Update balance based on trade
+    setBalanceOfC(isAddition ? balanceOfC + randomAmount : balanceOfC - randomAmount);
+  };
+
+  const handleFund = () => {
+    // Your logic for the "Fund" button
+  };
+
+  const handleClose = () => {
+    // Your logic for the "Close" button
+  };
+
+  const handleFinalize = () => {
+    // Your logic for the "Finalize" button
   };
 
   return (
-    <EthRequestContainer>
-      <Title>How much ETH do you need?</Title>
-      <InputBox
-        type="number"
-        value={ethAmount}
-        onChange={handleInputChange}
-        placeholder="Enter ETH amount"
-      />
-      <Button onClick={handleGrantRequest}>Request ETH</Button>
-      {grantStatus !== null && (
-        <ResultMessage positive={grantStatus}>
-          {grantStatus ? 'Granted, have fun with the money!' : 'Denied, not enough money in contract'}
-        </ResultMessage>
-      )}
-    </EthRequestContainer>
+    <div>
+      <h1>Flash Loan Concept</h1>
+      <div className={styles.container}>
+        <div className={styles.box}>
+          <FlashLoanRequest
+            contractBalance={contractBalance}
+            onRequest={handleFlashLoanRequest}
+            onTrade={handleTrade}
+            isFlashLoanRequested={flashLoanRequested}
+          />
+        <p>Balance of C: {balanceOfC}</p>
+        </div>
+        <div className={`${styles.box} ${styles.userBox}`}>          
+        <UserComponent user={{ name: 'User A', balance: 100 }} onFund={handleFund} onClose={handleClose} onFinalize={handleFinalize} />
+          <UserComponent user={{ name: 'User B', balance: 100 }} onFund={handleFund} onClose={handleClose} onFinalize={handleFinalize} />
+        </div>
+      </div>
+    </div>
   );
 };
 
-export default EthRequestPage;
+export default HomePage;
