@@ -93,7 +93,7 @@ contract ChannelLogic is IERC3156FlashLender {
     mapping(int => Channel) public channels;
 
     // Mapping: Channel_ID => Balance
-    mapping(int => uint256) public balances;
+    mapping(int => uint256) public balances; //brauchen wir doch nicht oder?
 
     // Compare two Participants
     function compareParticipants(Participant memory a, Participant memory b) private pure returns (bool) {
@@ -139,11 +139,14 @@ contract ChannelLogic is IERC3156FlashLender {
         // Emit event
         emit ChannelOpen();
     }
-
+    event ContractBalanceUpdated(uint256 newBalance);
     receive() external payable {
         Contract_Balance += msg.value;
+            emit ContractBalanceUpdated(Contract_Balance);
     }
-    
+
+    event ChannelFunded(int indexed channel_id, address indexed participant, uint256 amount);
+
     /**
      * @dev Funds a channel with the given amount
      *      and updates the balance of either participant_a or participant_b depending on the caller 
@@ -183,12 +186,14 @@ contract ChannelLogic is IERC3156FlashLender {
 
             // Log for tests, delete later
             console.log("Participant A has successfully funded the channel with ", channel.state.balance_A);
+                    emit ChannelFunded(channel_id, msg.sender, amount);
         } else {
             channel.state.balance_B = amount;
             channel.control.funded_b = true;
 
             // Log for tests, delete later
             console.log("Participant B has successfully funded the channel with ", channel.state.balance_B);
+                    emit ChannelFunded(channel_id, msg.sender, amount);
         }
 
         //Update Contract Pool
@@ -197,6 +202,8 @@ contract ChannelLogic is IERC3156FlashLender {
         // Log for tests, delete later
         console.log("Their new balance is: ", address(msg.sender).balance);
     }
+
+
     
     /**
     * @dev Closes the channel and pays out the balance of the caller
@@ -280,9 +287,12 @@ contract ChannelLogic is IERC3156FlashLender {
     }
 
     //Calling this means that you are d'accord with how the trade went and are okay with ending the trade here
-    function finalize(Channel_State calldata newState) public {
-        //Einfache Implementation dass es erstmal läuft aber keine Überprüfung der Signaturen
+    
+    function finalize(/*Channel_State calldata newState*/ int  channel_id) public {
+        //Einfache Implementation dass es erstmal läuft aber keine überprüffung der Signaturen 
+        Channel storage channel = channels[channel_id];
 
+        /*
         // Check if channel exists
         require(channels[newState.channel_id].state.channel_id == newState.channel_id, "Channel does not exist");
         // Check if participant is a paticipant of the channel
@@ -292,11 +302,14 @@ contract ChannelLogic is IERC3156FlashLender {
         require(newState.finalized == true, "New Channel is not finalized");
         //Check if Version Number is increased
         require(newState.version_num > channels[newState.channel_id].state.version_num, "Version Number is not increased");
-        
+        */
         //Hier müsste dann die Überprüfung der Signaturen stattfinden
 
+
+        channel.state.finalized = true;
+
         // Set new state
-        channels[newState.channel_id].state = newState;
+        //channels[newState.channel_id].state = newState;
 
         //Ideen wie man die Signautren überprüfen kann
         //Video hilfreich: https://www.youtube.com/watch?v=ZcmQ92vBLgg
