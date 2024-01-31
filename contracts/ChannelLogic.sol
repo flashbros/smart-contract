@@ -4,11 +4,28 @@ pragma solidity ^0.8.19; //todo: which version do we need? - 0.8.23 is the lates
 import "hardhat/console.sol";
 
 // Interfaces
-interface FlashBorrower {
+interface IERC3156FlashBorrower {
     function onFlashLoan(
         address initiator,
         int256 amount,
         int256 fee,
+        bytes calldata data
+    ) external returns (bool);
+}
+
+interface IERC3156FlashLender {
+    function maxFlashLoan(
+        address token
+    ) external view returns (uint256);
+
+    function flashFee(
+        address token,
+        uint256 amount
+    ) external view returns (uint256);
+
+    function flashLoan(
+        FlashBorrower receiver,
+        uint256 amount,
         bytes calldata data
     ) external returns (bool);
 }
@@ -54,12 +71,12 @@ struct Channel{
 
 // Contract Section
 
-contract ChannelLogic {
+contract ChannelLogic is IERC3156FlashLender {
     // Constants
-    int256 flashLoanFee = 1; // 10% fee
+    int256 flashLoanFee = 1; //  1 => 0.01% fee
 
     // Variables
-    uint256 public Contract_Balance = 0 ether;
+    uint256 public contract_pool = 0 ether;
 
     Participant[] public participants;
     
@@ -77,10 +94,6 @@ contract ChannelLogic {
 
     // Mapping: Channel_ID => Balance
     mapping(int => uint256) public balances;
-
-    function channelCount() public view returns (int) {
-        return channel_count;
-    }   
 
     // Compare two Participants
     function compareParticipants(Participant memory a, Participant memory b) private pure returns (bool) {
@@ -178,6 +191,9 @@ contract ChannelLogic {
             console.log("Participant B has successfully funded the channel with ", channel.state.balance_B);
         }
 
+        //Update Contract Pool
+        contract_pool += amount;
+
         // Log for tests, delete later
         console.log("Their new balance is: ", address(msg.sender).balance);
     }
@@ -211,6 +227,8 @@ contract ChannelLogic {
 
         // Check if there is a balance to transfer and do the transfer
         if(amountToTransfer > 0) {
+            //Update Contract Pool
+            contract_pool -= amountToTransfer;
             if(senderIsA) {
                 channel.state.balance_A = 0;
                 (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
@@ -246,6 +264,9 @@ contract ChannelLogic {
         // Check if there is a balance to transfer
         require(amountToTransfer > 0, "There is no balance for you in this channel to withdraw");
 
+        //Update Contract Pool
+        contract_pool -= amountToTransfer;
+
         // and do the transfer
         if(senderIsA) {
             channel.state.balance_A = 0;
@@ -260,10 +281,11 @@ contract ChannelLogic {
 
     //Calling this means that you are d'accord with how the trade went and are okay with ending the trade here
     function finalize(Channel_State calldata newState) public {
-        //Einfache Implementation dass es erstmal läuft aber keine überprüffung der Signaturen 
+        //Einfache Implementation dass es erstmal läuft aber keine Überprüfung der Signaturen
 
         // Check if channel exists
         require(channels[newState.channel_id].state.channel_id == newState.channel_id, "Channel does not exist");
+        // Check if participant is a paticipant of the channel
         //Check if channel is not finalized
         require(channels[newState.channel_id].state.finalized == false, "Channel is already finalized");
         //Check if new Channel is finalized
@@ -322,11 +344,26 @@ contract ChannelLogic {
         
         //uint256 fee = amount * flashLoanFee;
 
-        
+        require(
+        receiver.onFlashLoan(msg.sender, amount, fee, data)
+        == keccak256("ERC3156FlashBorrower.onFlashLoan"),
+        "IERC3156: Callback failed"
+        );
 
         //bool success = receiver.onFlashLoan(msg.sender, amount, fee, data); // Execute the FlashLoan
         //require(success, "FlashLoan failed");
 
         return true;
+    }
+
+    function maxFlashLoan(
+    ) external view returns (uint256) {
+        return contract_pool;
+    }
+
+    function flashFee(
+        uint256 amount
+    ) external view returns (uint256) {
+        return amount * flashLoanFee / 10000;
     }
 }
