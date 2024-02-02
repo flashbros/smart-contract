@@ -4,31 +4,14 @@ pragma solidity ^0.8.19; //todo: which version do we need? - 0.8.23 is the lates
 import "hardhat/console.sol";
 
 // Interfaces
-interface IERC3156FlashBorrower {
+interface FlashBorrower {
     function onFlashLoan(
         address initiator,
-        int256 amount,
-        int256 fee,
-        bytes calldata data
-    ) external returns (bool);
-}
-
-interface IERC3156FlashLender {
-    function maxFlashLoan(
-        address token
-    ) external view returns (uint256);
-
-    function flashFee(
-        address token,
-        uint256 amount
-    ) external view returns (uint256);
-
-    function flashLoan(
-        FlashBorrower receiver,
         uint256 amount,
-        bytes calldata data
+        uint256 fee
     ) external returns (bool);
 }
+
 
 // Stuct Section
 
@@ -58,6 +41,8 @@ struct Channel_Params{
 struct Channel_Control{
     bool funded_a;
     bool funded_b;
+    uint fundamount_a;
+    uint fundamount_b;
     bool withdrawed_a;
     bool withdrawed_b;
 }
@@ -71,12 +56,12 @@ struct Channel{
 
 // Contract Section
 
-contract ChannelLogic is IERC3156FlashLender {
+contract ChannelLogic {
     // Constants
-    int256 flashLoanFee = 1; //  1 => 0.01% fee
+    uint256 flashLoanFee = 1; //  1 => 0.01% fee
 
     // Variables
-    uint256 public contract_pool = 0 ether;
+    uint256 public contract_pool = 0 ether; //kann maybe durch address(this).balance ersetzt werden
 
     Participant[] public participants;
     
@@ -87,13 +72,25 @@ contract ChannelLogic is IERC3156FlashLender {
     event ChannelOpen();
     event NewTransaction(uint indexed transactionId, address sender, address receiver, uint amount);
     event PartyFinalized(int channel_id, address party);
+    event PartyFunded(address party, uint amount);
 
    
     // Mapping: Channel_ID => Channel
     mapping(int => Channel) public channels;
 
-    // Mapping: Channel_ID => Balance
-    mapping(int => uint256) public balances; //brauchen wir doch nicht oder?
+    /*
+    // Mapping: User_Address => Balance, keeps track which address has funded which amount
+    mapping(address => uint256) public balances;
+
+    // Dynamic Array: Stores the addresses of accounts that currently have at least one active channel funded
+    address[] shareHolders;
+
+    // Mapping: Address => hasAlreadyFundedAChannel, keeps track if the address has already funded at least one active channel
+    mapping(address => uint256) public alreadyShareholding;
+    */
+
+    // Dynamic Array: Keeps track which channels are currently active
+    int[] activeChannels;
 
     // Compare two Participants
     function compareParticipants(Participant memory a, Participant memory b) private pure returns (bool) {
@@ -104,7 +101,7 @@ contract ChannelLogic is IERC3156FlashLender {
 
 
     /**
-     * @dev Opens a new channel between two participants 
+     * Opens a new channel between two participants 
      *      and adds it to the channels mapping and updates the channel_count
      * @param params The parameters of the channel
      * @param state The state of the channel
@@ -129,26 +126,29 @@ contract ChannelLogic is IERC3156FlashLender {
         channel.params = params;
         channel.control.funded_a = false;
         channel.control.funded_b = false;
+        channel.control.fundamount_a = 0;
+        channel.control.fundamount_b = 0;
 
         // Increase channel_count
         channel_count++;
 
         // Add Channel to channels
         channels[state.channel_id] = channel;
+        activeChannels.push(state.channel_id);
 
         // Emit event
         emit ChannelOpen();
     }
     event ContractBalanceUpdated(uint256 newBalance);
     receive() external payable {
-        Contract_Balance += msg.value;
-            emit ContractBalanceUpdated(Contract_Balance);
+        contract_pool += msg.value;
+            emit ContractBalanceUpdated(contract_pool);
     }
 
     event ChannelFunded(int indexed channel_id, address indexed participant, uint256 amount);
 
     /**
-     * @dev Funds a channel with the given amount
+     * Funds a channel with the given amount
      *      and updates the balance of either participant_a or participant_b depending on the caller 
      * @param channel_id The id of the channel
      * @dev Oli Moritz Louis
@@ -183,6 +183,7 @@ contract ChannelLogic is IERC3156FlashLender {
         if(senderIsA) {
             channel.state.balance_A = amount;
             channel.control.funded_a = true;
+            channel.control.fundamount_a = amount;
 
             // Log for tests, delete later
             console.log("Participant A has successfully funded the channel with ", channel.state.balance_A);
@@ -190,11 +191,20 @@ contract ChannelLogic is IERC3156FlashLender {
         } else {
             channel.state.balance_B = amount;
             channel.control.funded_b = true;
+            channel.control.fundamount_b = amount;
 
             // Log for tests, delete later
             console.log("Participant B has successfully funded the channel with ", channel.state.balance_B);
                     emit ChannelFunded(channel_id, msg.sender, amount);
         }
+
+        /*
+        balances[msg.sender] += amount;
+        if(alreadyShareholding[msg.sender] == 0){
+            shareHolders.push(msg.sender);
+        }
+        alreadyShareholding[msg.sender] += 1;
+        */
 
         //Update Contract Pool
         contract_pool += amount;
@@ -206,7 +216,7 @@ contract ChannelLogic is IERC3156FlashLender {
 
     
     /**
-    * @dev Closes the channel and pays out the balance of the caller
+    * Closes the channel and pays out the balance of the caller
     * @param channel_id The id of the channel
     * @dev Moritz
     */
@@ -248,7 +258,7 @@ contract ChannelLogic is IERC3156FlashLender {
         }
     }
     /**
-    * @dev Withdraws the balance of the caller if the channel has already been closed
+    * Withdraws the balance of the caller if the channel has already been closed
     * @param channel_id The id of the channel
     * @dev Moritz
      */
@@ -286,30 +296,31 @@ contract ChannelLogic is IERC3156FlashLender {
         }
     }
 
-    //Calling this means that you are d'accord with how the trade went and are okay with ending the trade here
     
-    function finalize(/*Channel_State calldata newState*/ int  channel_id) public {
-        //Einfache Implementation dass es erstmal läuft aber keine überprüffung der Signaturen 
-        Channel storage channel = channels[channel_id];
+    /**
+    * Finalizes the channel with the given state
+    * @param newState The new state of the channel
+    * @dev Moritz
+     */
+    function finalize(Channel_State calldata newState) public {
+        //Einfache Implementation dass es erstmal läuft aber keine Überprüfung der Signaturen
 
-        /*
         // Check if channel exists
         require(channels[newState.channel_id].state.channel_id == newState.channel_id, "Channel does not exist");
-        // Check if participant is a paticipant of the channel
+        // TODO: Check if participant is a paticipant of the channel
         //Check if channel is not finalized
         require(channels[newState.channel_id].state.finalized == false, "Channel is already finalized");
         //Check if new Channel is finalized
         require(newState.finalized == true, "New Channel is not finalized");
         //Check if Version Number is increased
         require(newState.version_num > channels[newState.channel_id].state.version_num, "Version Number is not increased");
-        */
+        
         //Hier müsste dann die Überprüfung der Signaturen stattfinden
 
-
-        channel.state.finalized = true;
-
         // Set new state
-        //channels[newState.channel_id].state = newState;
+        channels[newState.channel_id].state = newState;
+
+        //TODO: Channel aus dem activeChannels Array entfernen
 
         //Ideen wie man die Signautren überprüfen kann
         //Video hilfreich: https://www.youtube.com/watch?v=ZcmQ92vBLgg
@@ -345,38 +356,69 @@ contract ChannelLogic is IERC3156FlashLender {
         */
     }
 
-  
-    
+      // FlashLoan Section
 
-    // FlashLoan Section
-    
+
+    uint256 expected;
+    bool payedBack;
+
     function flashLoan(
     FlashBorrower receiver,
-    uint256 amount,
-    bytes calldata data) external returns (bool) {
-        
-        //uint256 fee = amount * flashLoanFee;
+    uint256 amount) external returns (bool) {
 
-        require(
-        receiver.onFlashLoan(msg.sender, amount, fee, data)
-        == keccak256("ERC3156FlashBorrower.onFlashLoan"),
-        "IERC3156: Callback failed"
-        );
+        require(amount <= _maxFlashLoan(), "Amount exceeds the flash loan limit, try to choose a smaller amount");
 
-        //bool success = receiver.onFlashLoan(msg.sender, amount, fee, data); // Execute the FlashLoan
-        //require(success, "FlashLoan failed");
+        //initialize variables
+        uint256 old = address(this).balance;
+        payedBack = false;
 
+        //pay the flashloan
+        (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amount}("");
+        expected = amount + _flashFee(amount);
+
+        //execute onFlashLoan function on borrower side
+        receiver.onFlashLoan(msg.sender, amount, _flashFee(amount));
+
+        require(payedBack, "Payback did not happen or failed");
+
+        channelDistributor(_flashFee(amount));
+
+        return true;
+    }
+
+    function channelDistributor(
+        uint256 fees
+    ) internal  {
+        //TODO: Idee: Über alle aktiven Channels iterieren und die Fees aufteilen via activeChannels Array und dem Mapping
+        // Aufteilen Prozentual mit FUNDAMOUNT (!) und nicht mit Balance
+    }
+
+    function payBack() external payable returns (bool) {
+        require(msg.value == expected, "Did not send sufficient funds to pay back the flash loan");
+        payedBack = true;
         return true;
     }
 
     function maxFlashLoan(
     ) external view returns (uint256) {
+        return _maxFlashLoan();
+    }
+
+    function _maxFlashLoan(
+    ) internal view returns (uint256) {
         return contract_pool;
     }
 
     function flashFee(
         uint256 amount
     ) external view returns (uint256) {
+        return _flashFee(amount);
+    }
+
+    function _flashFee(
+        uint256 amount
+    ) internal view returns (uint256) {
         return amount * flashLoanFee / 10000;
     }
+
 }
