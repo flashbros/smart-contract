@@ -66,26 +66,16 @@ contract ChannelLogic {
     int public channel_count = 0;
     int r = 0;
 
-
     //Events
     event ChannelOpen();
     event NewTransaction(uint indexed transactionId, address sender, address receiver, uint amount);
     event PartyFinalized(int channel_id, address party);
 
-   
     // Mapping: Channel_ID => Channel
     mapping(int => Channel) public channels;
 
     // Mapping: Channel_ID => Balance
     mapping(int => uint256) public balances;
-
-    function channelCount() public view returns (int) {
-        return channel_count;
-    }   
-
-    function getBalance() public view returns (uint256) {
-        return 3;
-    }
 
     // Compare two Participants
     function compareParticipants(Participant memory a, Participant memory b) private pure returns (bool) {
@@ -93,7 +83,6 @@ contract ChannelLogic {
     }
 
     // Channel Section
-
 
     /**
      * @dev Opens a new channel between two participants 

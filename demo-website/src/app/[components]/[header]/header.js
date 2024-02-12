@@ -1,12 +1,9 @@
 import strucStyle from "./../../styles.module.css";
 import style from "./header.module.css";
 
-
-const Header = ({retBalance}) => (
+const Header = ({ balance }) => (
   <div className={strucStyle.Header}>
-    <div className={style.balance}>
-      Balance: {retBalance}
-      </div>
+    <div className={style.balance}>Balance:{balance} Eth</div>
   </div>
 );
 

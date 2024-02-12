@@ -10,6 +10,7 @@ import ChannelLogic from "../../../contracts/ChannelLogic.json";
 export default function HomePage() {
   const [contract, setContract] = useState(null); // The contract object
   const [channelCount, setChannelCount] = useState(0);
+  const [balance, setBalance] = useState(1337);
 
   useEffect(() => {
     async function init() {
@@ -20,13 +21,13 @@ export default function HomePage() {
       );
       setContract(conti);
     }
-
     init();
   }, []);
 
   useEffect(() => {
     if (contract) {
       getCount();
+      getBalance();
       contract.removeAllListeners();
       contract.on("ChannelOpen", () => {
         console.log("ChannelOpen - Event");
@@ -37,7 +38,8 @@ export default function HomePage() {
 
   const getCount = async () => {
     try {
-      const ch = await contract.channelCount();
+      console.log("getCount");
+      const ch = await contract.channel_count();
       console.log(ch.toNumber());
       setChannelCount(ch.toNumber());
     } catch (error) {
@@ -45,15 +47,16 @@ export default function HomePage() {
     }
   };
 
-  const retBalance = async () => {
+  const getBalance = async () => {
     try {
-      const balance = await contract.getBalance();
-      return balance;
+      console.log("getBalance");
+      const balance = await contract.Contract_Balance();
+      console.log(balance.toNumber());
+      setBalance(balance.toNumber());
     } catch (error) {
       console.log(error);
     }
   };
-
 
   const openChan = async () => {
     try {
@@ -81,10 +84,10 @@ export default function HomePage() {
 
   return (
     <div>
-    <Header balance={retBalance}/>
-    <LeftPanel />
-    <div className={styles.dividerY}/>
-    <RightPanel />
+      <Header balance={balance} />
+      <LeftPanel />
+      <div className={styles.dividerY} />
+      <RightPanel />
     </div>
   );
-};
+}
