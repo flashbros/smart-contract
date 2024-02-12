@@ -389,8 +389,15 @@ contract ChannelLogic {
     function channelDistributor(
         uint256 fees
     ) internal  {
-        //TODO: Idee: Über alle aktiven Channels iterieren und die Fees aufteilen via activeChannels Array und dem Mapping
-        // Aufteilen Prozentual mit FUNDAMOUNT (!) und nicht mit Balance
+        for(int i = 0; i < activeChannels.length; i++) {
+            //get the channel via the mapping and the array
+            Channel c = channels[activeChannels[i]];
+
+            //distribute the fees to the participants and increase version number
+            c.state.balance_A += (c.state.balance_A + c.state.balance_B) / address(this).balance * fees / 2;
+            c.state.balance_B += (c.state.balance_A + c.state.balance_B) / address(this).balance * fees / 2;
+            c.state.version_num += 1;
+        }
     }
 
     function payBack() external payable returns (bool) {
