@@ -6,7 +6,7 @@ const RightPanel = () => (
   <div className={strucStyle.RightPanel}>
     <div className={strucStyle.RightPanelRelativeWrapper}>
       <TopRightPanel />
-      <div className={strucStyle.dividerX} />
+      {/* <div className={strucStyle.dividerX} /> */}
       <BottomRightPanel />
     </div>
   </div>

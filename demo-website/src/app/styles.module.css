@@ -21,17 +21,25 @@
 .dividerY {
   z-index: 9999;
   position: absolute;
-  height: var(--panelSize);
+  height: 50%;
   width: 3px;
   background-color: black;
+  top: 50%;
   left: 50%;
   transform: translateX(-50%);
+  opacity: 0.15;
+  border-radius: 20px;
+  transform: translateY(-50%);
 }
 
 .TopRightPanel {
   position: relative;
-
+  width: 100%;
   min-height: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .dividerX {
@@ -46,8 +54,12 @@
 
 .BottomRightPanel {
   position: relative;
-
+  width: 100%;
   min-height: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .RightPanelRelativeWrapper {
