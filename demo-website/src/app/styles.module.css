@@ -1,0 +1,57 @@
+.Header {
+  position: relative;
+  width: 100vw;
+  height: calc(100vh - var(--panelSize));
+}
+
+.LeftPanel {
+  position: absolute;
+
+  width: 50vw;
+  height: var(--panelSize);
+}
+
+.RightPanel {
+  position: absolute;
+  left: 50%;
+  width: 50vw;
+  height: var(--panelSize);
+}
+
+.dividerY {
+  z-index: 9999;
+  position: absolute;
+  height: var(--panelSize);
+  width: 3px;
+  background-color: black;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.TopRightPanel {
+  position: relative;
+
+  min-height: 50%;
+}
+
+.dividerX {
+  z-index: 9999;
+  position: absolute;
+  width: 100%;
+  height: 3px;
+  background-color: black;
+  transform: translateY(-50%);
+  top: 50%;
+}
+
+.BottomRightPanel {
+  position: relative;
+
+  min-height: 50%;
+}
+
+.RightPanelRelativeWrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
