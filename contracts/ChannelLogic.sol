@@ -59,12 +59,13 @@ contract ChannelLogic {
     int256 flashLoanFee = 1; // 10% fee
 
     // Variables
-    uint256 public Contract_Balance = 0 ether;
+    uint256 public Contract_Balance = address(this).balance;
 
     Participant[] public participants;
     
     int public channel_count = 0;
     int r = 0;
+
 
     //Events
     event ChannelOpen();
@@ -81,6 +82,10 @@ contract ChannelLogic {
     function channelCount() public view returns (int) {
         return channel_count;
     }   
+
+    function getBalance() public view returns (uint256) {
+        return 3;
+    }
 
     // Compare two Participants
     function compareParticipants(Participant memory a, Participant memory b) private pure returns (bool) {
