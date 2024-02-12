@@ -21,7 +21,19 @@
   border-radius: 12px;
 }
 
+.inactive {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  border: solid 2px #6c757d;
+  cursor: not-allowed;
+}
+
 .button:hover {
   background-color: #4caf50;
   color: white;
+}
+
+.inactive:hover {
+  background-color: #f8f9fa;
+  color: #6c757d;
 }
