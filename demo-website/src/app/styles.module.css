@@ -29,6 +29,7 @@
   opacity: 0.15;
   border-radius: 20px;
   transform: translateY(-50%);
+  margin-top: calc(100vh - var(--panelSize));
 }
 
 .TopRightPanel {
