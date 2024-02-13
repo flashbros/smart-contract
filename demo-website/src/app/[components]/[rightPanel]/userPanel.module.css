@@ -9,28 +9,38 @@
   padding: 6px;
 }
 
-.actionField {
+.fields {
   position: relative;
-  margin: 10px;
-  min-height: 150px;
-  min-width: 75%;
+  height: 100%;
+  width: 100%;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  background-color: blue;
+  margin: 6px;
+}
+
+.actionField {
+  position: relative;
+  min-height: 150px;
+  width: 75%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  background-color: red, 0.5;
 }
 
 .input {
-    position: relative;
+  position: relative;
   width: 50%;
+  height: 4ch;
   padding: 8px 16px;
   margin: 8px 0;
   display: inline-block;
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
-  float: left;
 }
 
 .button {
@@ -39,6 +49,7 @@
   border: solid 2px #4caf50;
   color: #4caf50;
   padding: 4px 8px;
+  margin-left: 10px;
   text-align: center;
   text-decoration: none;
   display: inline-block;
@@ -46,10 +57,27 @@
   transition-duration: 0.4s;
   cursor: pointer;
   border-radius: 6px;
-  float: right;
 }
 
 .button:hover {
   background-color: #4caf50;
   color: white;
+}
+
+.selectField {
+  position: relative;
+  width: 20%;
+  display: inline-block;
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.selectEntry {
+}
+
+.selectEntry:hover {
+  color: grey;
+  cursor: pointer;
 }

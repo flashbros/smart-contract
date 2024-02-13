@@ -1,10 +1,12 @@
 import UserPanel from "./userPanel";
 import strucStyle from "./../../styles.module.css";
 
-const BottomRightPanel = () => (
-  <div className={strucStyle.TopRightPanel}>
-    <UserPanel />
-  </div>
-);
+export default function BottomRightPanel() {
+  let user = { name: "Bob", id: 1 };
 
-export default BottomRightPanel;
+  return (
+    <div className={strucStyle.BottomRightPanel}>
+      <UserPanel user={user} />
+    </div>
+  );
+}
