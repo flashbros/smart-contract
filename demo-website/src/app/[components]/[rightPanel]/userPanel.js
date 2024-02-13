@@ -1,5 +1,6 @@
 import ButtonLayout from "../[buttonLayout]/buttonLayout";
 import style from "./userPanel.module.css";
+import strucStyle from "./../../styles.module.css";
 import SelectField from "./selectField";
 
 export default function UserPanel({ user = { name: "user", id: 0 } }) {
@@ -29,11 +30,11 @@ export default function UserPanel({ user = { name: "user", id: 0 } }) {
       <div className={style.fields}>
         <div className={style.actionField}>
           <input
-            className={style.input}
+            className={strucStyle.input}
             type="text"
-            placeholder="input"
+            placeholder="Input"
           ></input>
-          <div className={style.button}>Send</div>
+          <div className={strucStyle.button}>Send</div>
         </div>
         <div className={style.fieldDivider} />
         <SelectField ownId={user.id} users={users} />
