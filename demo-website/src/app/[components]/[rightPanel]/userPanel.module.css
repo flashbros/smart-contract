@@ -31,6 +31,16 @@
   background-color: red, 0.5;
 }
 
+.fieldDivider {
+  position: relative;
+  width: 2px;
+  height: 60px;
+  background-color: black;
+  margin: 6px;
+  border-radius: 20px;
+  opacity: 0.15;
+}
+
 .input {
   position: relative;
   width: 50%;
@@ -65,13 +75,14 @@
 }
 
 .selectField {
+  padding: 8px;
   position: relative;
   width: 20%;
   display: inline-block;
-  border: 1px solid #ccc;
-  padding: 8px;
-  border-radius: 10px;
-  box-sizing: border-box;
+}
+
+.selectTitle {
+  text-decoration: underline 2px #4caf50;
 }
 
 .selectEntry {
