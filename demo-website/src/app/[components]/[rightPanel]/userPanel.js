@@ -16,30 +16,32 @@ export default function UserPanel({ user = { name: "user", id: 0 } }) {
   ];
 
   return (
-    <div className={style.userContainer}>
-      <div className={style.left}>
-        <div className={style.title}>{user.name}</div>
-        <div>Wallet: {userBalance} Eth</div>
-        <div className={style.ch}>ChannelID: {channelID}</div>
-      </div>
-      <div className={style.right}>
-        <div className={style.budget}>{userBalance} Eth - User Balance</div>
-        <div className={style.budget}>{userBalance} Eth - Earned</div>
-      </div>
-
-      <div className={style.fields}>
-        <div className={style.actionField}>
-          <input
-            className={strucStyle.input}
-            type="text"
-            placeholder="Input"
-          ></input>
-          <div className={strucStyle.button}>Send</div>
+    <div className={strucStyle.HalfPanel}>
+      <div className={style.userContainer}>
+        <div className={style.left}>
+          <div className={style.title}>{user.name}</div>
+          <div>Wallet: {userBalance} Eth</div>
+          <div className={style.ch}>ChannelID: {channelID}</div>
         </div>
-        <div className={style.fieldDivider} />
-        <SelectField ownId={user.id} users={users} />
+        <div className={style.right}>
+          <div className={style.budget}>{userBalance} Eth - User Balance</div>
+          <div className={style.budget}>{userBalance} Eth - Earned</div>
+        </div>
+
+        <div className={style.fields}>
+          <div className={style.actionField}>
+            <input
+              className={strucStyle.input}
+              type="text"
+              placeholder="Input"
+            ></input>
+            <div className={strucStyle.button}>Send</div>
+          </div>
+          <div className={style.fieldDivider} />
+          <SelectField ownId={user.id} users={users} />
+        </div>
+        <ButtonLayout inactive={[false, false, false, false]} />
       </div>
-      <ButtonLayout inactive={[false, false, false, false]} />
     </div>
   );
 }

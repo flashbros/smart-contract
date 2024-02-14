@@ -22,6 +22,7 @@ export default function LeftPanel() {
               </div>
               <div className={style.modal}>Sucess! FlashLoan granted.</div>
             </div>
+            <div className={style.switch}>Switch</div>
           </div>
         </div>
       </div>
