@@ -32,16 +32,6 @@
   margin-top: calc(100vh - var(--panelSize));
 }
 
-.TopRightPanel {
-  position: relative;
-  width: 100%;
-  min-height: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
 .dividerX {
   z-index: 9999;
   position: absolute;

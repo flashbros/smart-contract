@@ -8,9 +8,12 @@ export default function RightPanel() {
   return (
     <div className={strucStyle.RightPanel}>
       <div className={strucStyle.RelativeWrapper}>
-        <UserPanel user={user1} />
-       
-        <UserPanel user={user2} />
+        <div className={style.flexContainer}>
+          <div className={style.connectionDots} />
+          <UserPanel user={user1} />
+          <div className={style.channelStatus}>Channel Information</div>
+          <UserPanel user={user2} />
+        </div>
       </div>
     </div>
   );

@@ -16,7 +16,7 @@ export default function UserPanel({ user = { name: "user", id: 0 } }) {
   ];
 
   return (
-    <div className={strucStyle.HalfPanel}>
+    <div className={strucStyle.HalfPanelOLD}>
       <div className={style.userContainer}>
         <div className={style.left}>
           <div className={style.title}>{user.name}</div>

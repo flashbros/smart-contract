@@ -23,6 +23,7 @@ export default function LeftPanel() {
               <div className={style.modal}>Sucess! FlashLoan granted.</div>
             </div>
           </div>
+          <div className={style.log}>Log</div>
         </div>
       </div>
     </div>
