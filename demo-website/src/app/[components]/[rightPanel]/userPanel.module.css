@@ -6,6 +6,7 @@
   transition: 0.3s;
   padding: 6px;
   display: inline-block;
+  width: 500px;
 }
 
 .left {
@@ -17,26 +18,15 @@
   text-align: right;
 }
 
-.fields {
-  position: relative;
-  height: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  margin: 6px;
-}
-
 .actionField {
   position: relative;
   min-height: 100px;
-  width: 75%;
+  width: 100%;
+  max-width: 300px;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  background-color: red, 0.5;
 }
 
 .fieldDivider {

@@ -42,16 +42,6 @@
   top: 50%;
 }
 
-.HalfPanel {
-  position: relative;
-  width: 100%;
-  min-height: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
 .RelativeWrapper {
   width: 100%;
   height: 100%;
