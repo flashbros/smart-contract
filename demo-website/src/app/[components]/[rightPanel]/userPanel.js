@@ -37,8 +37,6 @@ export default function UserPanel({ user = { name: "user", id: 0 } }) {
             ></input>
             <div className={strucStyle.button}>Send</div>
           </div>
-          <div className={style.fieldDivider} />
-          <SelectField ownId={user.id} users={users} />
         </div>
         <ButtonLayout inactive={[false, false, false, false]} />
       </div>
