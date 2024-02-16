@@ -19,8 +19,8 @@ export default function UserPanel({ user = { name: "user", id: 0 } }) {
   ];
 
   return (
-    <div>
-      <div className={style.userContainer}>
+    <div className={style.userContainer}>
+      <div className={style.topWrapper}>
         <div className={style.left}>
           <div className={style.title}>{user.name}</div>
           <div>Wallet: {userBalance} Eth</div>
@@ -30,15 +30,14 @@ export default function UserPanel({ user = { name: "user", id: 0 } }) {
           <div className={style.budget}>{userBalance} Eth - User Balance</div>
           <div className={style.budget}>{userBalance} Eth - Earned</div>
         </div>
-        <div className={style.actionField}>
-          <ActionField state={currentSate} />
-        </div>
-
-        <ButtonLayout
-          inactive={[false, false, false, false]}
-          setState={setState}
-        />
       </div>
+      <div className={style.actionField}>
+        <ActionField state={currentSate} />
+      </div>
+      <ButtonLayout
+        inactive={[false, false, false, false]}
+        setState={setState}
+      />
     </div>
   );
 }

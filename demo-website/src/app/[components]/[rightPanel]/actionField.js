@@ -17,10 +17,10 @@ export default function ActionField({ state }) {
       );
     case 2:
       return (
-        <div>
+        <>
          <input type="text" placeholder="Enter amount" className={strucStyle.input}/>
           <button className={strucStyle.button}>Fund</button>
-        </div>
+        </>
       );
     case 3:
       return (

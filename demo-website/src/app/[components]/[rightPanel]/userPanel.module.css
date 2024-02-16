@@ -6,7 +6,11 @@
   transition: 0.3s;
   padding: 6px;
   display: inline-block;
-  width: 500px;
+  width: 60%;
+}
+
+.topWrapper {
+  position: relative;
 }
 
 .left {
@@ -22,7 +26,6 @@
   position: relative;
   min-height: 100px;
   width: 100%;
-  max-width: 300px;
   display: flex;
   flex-direction: row;
   align-items: center;
