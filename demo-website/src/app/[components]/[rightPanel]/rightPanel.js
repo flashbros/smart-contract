@@ -2,7 +2,7 @@ import strucStyle from "./../../styles.module.css";
 import UserPanel from "./userPanel";
 import style from "./rightPanel.module.css";
 
-export default function RightPanel({openChan}) {
+export default function RightPanel({contract}) {
   let user1 = { name: "Alice", id: 0 };
   let user2 = { name: "Bob", id: 1 };
 
@@ -15,9 +15,9 @@ export default function RightPanel({openChan}) {
       <div className={strucStyle.RelativeWrapper}>
         <div className={style.flexContainer}>
           <div className={style.connectionDots} />
-          <UserPanel user={user1} users={users} openChan={openChan}/>
+          <UserPanel user={user1} users={users} contract={contract}/>
           <div className={style.channelStatus}>Channel Information</div>
-          <UserPanel user={user2} users={users} openChan={openChan}/>
+          <UserPanel user={user2} users={users} contract={contract}/>
         </div>
       </div>
     </div>

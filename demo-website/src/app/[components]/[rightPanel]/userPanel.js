@@ -8,7 +8,7 @@ import ActionField from "./actionField";
 export default function UserPanel({
   user = { name: "user", id: 0 },
   users = [{ name: "user", id: 0 }],
-  openChan,
+  contract,
 }) {
   let channelID = 0;
   let userBalance = 0;
@@ -57,7 +57,7 @@ export default function UserPanel({
           setState={setState}
           user={user}
           users={users}
-          openChan={openChan}
+          contract={contract}
         />
       </div>
       <ButtonLayout inactive={inactiveButtons} setState={setState} />

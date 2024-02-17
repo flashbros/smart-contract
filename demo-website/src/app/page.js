@@ -58,37 +58,12 @@ export default function HomePage() {
     }
   };
 
-  const openChan = async () => {
-    try {
-      const Channel_Params = {
-        participant_a: {
-          addresse: await (await getSigner(1)).getAddress(),
-        },
-        participant_b: {
-          addresse: await (await getSigner(2)).getAddress(),
-        },
-      };
-      const Channel_State = {
-        channel_id: 1,
-        balance_A: 0,
-        balance_B: 0,
-        version_num: 0,
-        finalized: false,
-        closed: false,
-      };
-      console.log(contract);
-      contract.open(Channel_Params, Channel_State);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   return (
     <div>
       <Header balance={balance} />
       <LeftPanel />
       <div className={styles.dividerY} />
-      <RightPanel openChan={openChan}/>
+      <RightPanel contract={contract}/>
     </div>
   );
 }
