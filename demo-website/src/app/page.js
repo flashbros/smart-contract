@@ -85,7 +85,6 @@ export default function HomePage() {
 
   return (
     <div>
-      <button onClick={() => openChan()}>Open Channel</button>
       <Header balance={balance} />
       <LeftPanel />
       <div className={styles.dividerY} />
