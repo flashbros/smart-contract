@@ -10,19 +10,19 @@ const ButtonLayout = ({ inactive, setState }) => (
     </div>
     <div
       className={`${style.button} ${inactive[1] ? style.inactive : ""}`}
-      onClick={() => (!inactive[1] ? setState(2) : "")}
+      onClick={() => (!inactive[1] ? setState(3) : "")}
     >
       Fund
     </div>
     <div
       className={`${style.button} ${inactive[2] ? style.inactive : ""}`}
-      onClick={() => (!inactive[2] ? setState(3) : "")}
+      onClick={() => (!inactive[2] ? setState(5) : "")}
     >
       Close
     </div>
     <div
       className={`${style.button} ${inactive[3] ? style.inactive : ""}`}
-      onClick={() => (!inactive[3] ? setState(4) : "")}
+      onClick={() => (!inactive[3] ? setState(7) : "")}
     >
       Withdraw
     </div>

@@ -5,7 +5,11 @@ import SelectField from "./selectField";
 import { useState, useEffect } from "react";
 import ActionField from "./actionField";
 
-export default function UserPanel({ user = { name: "user", id: 0 } }) {
+export default function UserPanel({
+  user = { name: "user", id: 0 },
+  users = [{ name: "user", id: 0 }],
+  openChan,
+}) {
   let channelID = 0;
   let userBalance = 0;
 
@@ -23,29 +27,16 @@ export default function UserPanel({ user = { name: "user", id: 0 } }) {
       case 0:
         setInactiveButtons([false, true, true, true]);
         break;
-      case 1:
+      case 2:
         setInactiveButtons([true, false, false, false]);
         break;
-      case 2:
-        setInactiveButtons([true, true, false, false]);
-        break;
-      case 3:
-        setInactiveButtons([true, true, true, true]);
-        break;
       case 4:
-        setInactiveButtons([true, true, true, true]);
+        setInactiveButtons([true, true, false, false]);
         break;
       default:
         setInactiveButtons([true, true, true, true]);
     }
   }, [currentSate]);
-
-  let users = [
-    { id: 0, name: "Alice" },
-    { id: 1, name: "Bob" },
-    { id: 2, name: "David" },
-    { id: 3, name: "Eve" },
-  ];
 
   return (
     <div className={style.userContainer}>
@@ -61,7 +52,13 @@ export default function UserPanel({ user = { name: "user", id: 0 } }) {
         </div>
       </div>
       <div className={style.actionField}>
-        <ActionField state={currentSate} />
+        <ActionField
+          state={currentSate}
+          setState={setState}
+          user={user}
+          users={users}
+          openChan={openChan}
+        />
       </div>
       <ButtonLayout inactive={inactiveButtons} setState={setState} />
     </div>

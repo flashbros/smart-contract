@@ -74,8 +74,9 @@ export default function HomePage() {
         balance_B: 0,
         version_num: 0,
         finalized: false,
+        closed: false,
       };
-
+      console.log(contract);
       contract.open(Channel_Params, Channel_State);
     } catch (error) {
       console.log(error);
@@ -84,10 +85,11 @@ export default function HomePage() {
 
   return (
     <div>
+      <button onClick={() => openChan()}>Open Channel</button>
       <Header balance={balance} />
       <LeftPanel />
       <div className={styles.dividerY} />
-      <RightPanel />
+      <RightPanel openChan={openChan}/>
     </div>
   );
 }
