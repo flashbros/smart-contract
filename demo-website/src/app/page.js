@@ -11,9 +11,9 @@ import { ethers } from "ethers";
 export default function HomePage() {
   const [contract, setContract] = useState(null); // The contract object
   const [channelCount, setChannelCount] = useState(0);
-  const [balance, setBalance] = useState(1337);
+  const [balance, setBalance] = useState(0.0);
 
-  const [currentSate, setState] = useState([0, 0]);
+  const [currentState, setState] = useState([0, 0]);
 
   useEffect(() => {
     async function init() {
@@ -40,9 +40,19 @@ export default function HomePage() {
         getCount();
         setState([2, 2]);
       });
-      conti.on("ChannelFund", () => {
+      conti.on("ChannelFund", async (e) => {
         console.log("ChannelFund - Event");
-        setState([3, 3]);
+        getBalance();
+        console.log(currentState);
+        let arr = [
+          currentState[0] < 2 ? 2 : currentState[0],
+          currentState[1] < 2 ? 2 : currentState[1]
+        ];
+        console.log(arr);
+        if ((await contract[0].channels(1))[2].funded_a) arr[0] = 4;
+        if ((await contract[0].channels(1))[2].funded_b) arr[1] = 4;
+        console.log(arr);
+        setState(arr);
       });
       conti.on("ChannelClose", () => {
         console.log("ChannelClose - Event");
@@ -63,12 +73,15 @@ export default function HomePage() {
 
   const getBalance = async () => {
     try {
-      console.log("getBalance");
-      console.log(
-          "Balance:" +
-          ethers.utils.formatEther((await getProvider().getBalance("0x5fbdb2315678afecb367f032d93f642f64180aa3")).toString())
-        
+      let d = ethers.utils.formatEther(
+        (
+          await getProvider().getBalance(
+            "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+          )
+        ).toString()
       );
+      console.log(d);
+      setBalance(d);
     } catch (error) {
       console.log(error);
     }
@@ -81,7 +94,7 @@ export default function HomePage() {
       <div className={styles.dividerY} />
       <RightPanel
         contract={contract}
-        currentState={currentSate}
+        currentState={currentState}
         setState={setState}
       />
     </div>

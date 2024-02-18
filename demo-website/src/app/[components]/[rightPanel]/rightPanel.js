@@ -2,10 +2,15 @@ import strucStyle from "./../../styles.module.css";
 import UserPanel from "./userPanel";
 import style from "./rightPanel.module.css";
 import { useEffect } from "react";
+import { ethers } from "ethers";
+import { useState } from "react";
+
 
 export default function RightPanel({ contract, currentState, setState }) {
   let user1 = { name: "Alice", id: 0 };
   let user2 = { name: "Bob", id: 1 };
+
+  const [d1, setD1] = useState(false);
 
   let users = [
     {
@@ -20,29 +25,52 @@ export default function RightPanel({ contract, currentState, setState }) {
     },
   ];
 
-  let d1 = false;
-
   useEffect(() => {
     async function dodo() {
-      if (currentState[0] === 2 && currentState[1] === 2 && !d1) {
+      if (currentState[0] >= 2 && currentState[1] >= 2 && !d1) {
         let dots = document.getElementById("dots");
         dots.classList.add(style.fadeIn);
         let chSta = document.getElementById("channelStatus");
         chSta.classList.add(style.fadeIn);
-        d1 = true;
+        setD1(true);
+      } else if (currentState[0] >= 2 || currentState[1] >= 2) {
+        console.log("works!");
+        let chSta = document.getElementById("channelStatus");
+        chSta.innerHTML =
+          "Channel Funds: " +
+          (parseFloat(
+            ethers.utils.formatEther(
+              (await contract[0].channels(1))[0].balance_A.toString()
+            )
+          ) +
+            parseFloat(
+              ethers.utils.formatEther(
+                (await contract[0].channels(1))[0].balance_B.toString()
+              )
+            )) +
+          " Eth";
       }
     }
     dodo();
   }, [currentState]);
 
-  
   useEffect(() => {
     async function dodo() {
       if (contract) {
         let chSta = document.getElementById("channelStatus");
-        //chSta.innerHTML =
-        //  "Channel Funds: " +
-        //  ((await contract[0].channels(1))[0].balance_A.toNumber()+(await contract[0].channels(1))[0].balance_B.toNumber());
+        chSta.innerHTML =
+          "Channel Funds: " +
+          (parseFloat(
+            ethers.utils.formatEther(
+              (await contract[0].channels(1))[0].balance_A.toString()
+            )
+          ) +
+            parseFloat(
+              ethers.utils.formatEther(
+                (await contract[0].channels(1))[0].balance_B.toString()
+              )
+            )) +
+          " Eth";
       }
     }
     dodo();
@@ -60,7 +88,9 @@ export default function RightPanel({ contract, currentState, setState }) {
             currentState={currentState}
             setState={setState}
           />
-          <div id="channelStatus" className={style.channelStatus}>ff</div>
+          <div id="channelStatus" className={style.channelStatus}>
+            ff
+          </div>
           <UserPanel
             user={user2}
             users={users}

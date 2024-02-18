@@ -306,8 +306,6 @@ contract ChannelLogic {
         */
     }
 
-  
-    
 
     // FlashLoan Section
     

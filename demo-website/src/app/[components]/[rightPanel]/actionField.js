@@ -41,7 +41,9 @@ export default function ActionField({
 
   const fundChan = async (id) => {
     try {
-      contract[id].fund(1,{ value: ethers.utils.parseEther("1") });
+      contract[id + 1].fund(1, {
+        value: ethers.utils.parseEther(fundAmount[id]),
+      });
     } catch (error) {
       console.log(error);
     }
@@ -87,7 +89,7 @@ export default function ActionField({
           />
           <button
             className={strucStyle.button}
-            onClick={() => fundChan(user.id+1)}
+            onClick={() => fundChan(user.id)}
           >
             Fund
           </button>
