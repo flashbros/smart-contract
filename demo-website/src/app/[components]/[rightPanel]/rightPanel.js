@@ -1,23 +1,73 @@
 import strucStyle from "./../../styles.module.css";
 import UserPanel from "./userPanel";
 import style from "./rightPanel.module.css";
+import { useEffect } from "react";
 
-export default function RightPanel({contract}) {
+export default function RightPanel({ contract, currentState, setState }) {
   let user1 = { name: "Alice", id: 0 };
   let user2 = { name: "Bob", id: 1 };
 
   let users = [
-    { id: 0, name: "Alice" },
-    { id: 1, name: "Bob" }
+    {
+      id: 0,
+      name: "Alice",
+      addresse: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    },
+    {
+      id: 1,
+      name: "Bob",
+      addresse: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+    },
   ];
+
+  let d1 = false;
+
+  useEffect(() => {
+    async function dodo() {
+      if (currentState[0] === 2 && currentState[1] === 2 && !d1) {
+        let dots = document.getElementById("dots");
+        dots.classList.add(style.fadeIn);
+        let chSta = document.getElementById("channelStatus");
+        chSta.classList.add(style.fadeIn);
+        d1 = true;
+      }
+    }
+    dodo();
+  }, [currentState]);
+
+  
+  useEffect(() => {
+    async function dodo() {
+      if (contract) {
+        let chSta = document.getElementById("channelStatus");
+        //chSta.innerHTML =
+        //  "Channel Funds: " +
+        //  ((await contract[0].channels(1))[0].balance_A.toNumber()+(await contract[0].channels(1))[0].balance_B.toNumber());
+      }
+    }
+    dodo();
+  }, [contract]);
+
   return (
     <div className={strucStyle.RightPanel}>
       <div className={strucStyle.RelativeWrapper}>
         <div className={style.flexContainer}>
-          <div className={style.connectionDots} />
-          <UserPanel user={user1} users={users} contract={contract}/>
-          <div className={style.channelStatus}>Channel Information</div>
-          <UserPanel user={user2} users={users} contract={contract}/>
+          <div id="dots" className={style.connectionDots} />
+          <UserPanel
+            user={user1}
+            users={users}
+            contract={contract}
+            currentState={currentState}
+            setState={setState}
+          />
+          <div id="channelStatus" className={style.channelStatus}>ff</div>
+          <UserPanel
+            user={user2}
+            users={users}
+            contract={contract}
+            currentState={currentState}
+            setState={setState}
+          />
         </div>
       </div>
     </div>

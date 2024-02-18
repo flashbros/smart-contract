@@ -64,12 +64,12 @@ contract ChannelLogic {
     Participant[] public participants;
     
     int public channel_count = 0;
-    int r = 0;
 
     //Events
-    event ChannelOpen();
-    event NewTransaction(uint indexed transactionId, address sender, address receiver, uint amount);
-    event PartyFinalized(int channel_id, address party);
+    event ChannelOpen(Channel channel);
+    event ChannelFund();
+    event ChannelWithdraw();
+    event ChannelClose();
 
     // Mapping: Channel_ID => Channel
     mapping(int => Channel) public channels;
@@ -118,7 +118,7 @@ contract ChannelLogic {
         channels[state.channel_id] = channel;
 
         // Emit event
-        emit ChannelOpen();
+        emit ChannelOpen(channel);
     }
 
     receive() external payable {
@@ -174,6 +174,8 @@ contract ChannelLogic {
 
         // Log for tests, delete later
         console.log("Their new balance is: ", address(msg.sender).balance);
+        console.log("The contract balance is: ", address(this).balance);
+        emit ChannelFund();
     }
     
     /**

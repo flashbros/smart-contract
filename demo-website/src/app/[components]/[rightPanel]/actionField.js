@@ -1,15 +1,19 @@
 import strucStyle from "./../../styles.module.css";
 import style from "./userPanel.module.css";
 import { getSigner } from "../../../../../ethereum.js";
+import { ethers } from "ethers";
+const { useState } = require("react");
 
 export default function ActionField({
-  state,
+  currentState,
   setState,
   user,
   users,
   contract,
 }) {
   const filterdUsers = users.filter((u) => u.id !== user.id);
+
+  const [fundAmount, setFundAmount] = useState([0, 0]);
 
   const openChan = async () => {
     try {
@@ -29,14 +33,30 @@ export default function ActionField({
         finalized: false,
         closed: false,
       };
-      console.log(contract);
-      contract.open(Channel_Params, Channel_State);
+      contract[0].open(Channel_Params, Channel_State);
     } catch (error) {
       console.log(error);
     }
   };
 
-  switch (state) {
+  const fundChan = async (id) => {
+    try {
+      contract[id].fund(1,{ value: ethers.utils.parseEther("1") });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  function handleChange(e, index) {
+    console.log(e.target.value);
+    setFundAmount((prev) => {
+      let arr = [...prev];
+      arr[index] = e.target.value;
+      return arr;
+    });
+  }
+
+  switch (currentState[user.id]) {
     case 0:
       return <>Press a function!</>;
     case 1:
@@ -60,11 +80,15 @@ export default function ActionField({
       return (
         <>
           <input
-            type="text"
             placeholder="Enter amount"
             className={strucStyle.input}
+            type="number"
+            onChange={(e) => handleChange(e, user.id)}
           />
-          <button className={strucStyle.button} onClick={() => setState(4)}>
+          <button
+            className={strucStyle.button}
+            onClick={() => fundChan(user.id+1)}
+          >
             Fund
           </button>
         </>
