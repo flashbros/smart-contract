@@ -66,7 +66,7 @@ export default function HomePage() {
       console.log("getBalance");
       console.log(
           "Balance:" +
-          (await getProvider().getBalance("0x5fbdb2315678afecb367f032d93f642f64180aa3")).toString()
+          ethers.utils.formatEther((await getProvider().getBalance("0x5fbdb2315678afecb367f032d93f642f64180aa3")).toString())
         
       );
     } catch (error) {
