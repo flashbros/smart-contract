@@ -29,4 +29,8 @@ contract ExampleBorrower is FlashBorrower {
         
         return true;
     }
+
+    receive() external payable {
+        console.log("ExampleBorrower Received %s", msg.value);
+    }
 }
