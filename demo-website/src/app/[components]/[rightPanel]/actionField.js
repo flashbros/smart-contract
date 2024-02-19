@@ -13,7 +13,7 @@ export default function ActionField({
 }) {
   const filterdUsers = users.filter((u) => u.id !== user.id);
 
-  const [fundAmount, setFundAmount] = useState([0, 0]);
+  const [fundAmount, setFundAmount] = useState(0);
 
   const openChan = async () => {
     try {
@@ -39,24 +39,16 @@ export default function ActionField({
     }
   };
 
-  const fundChan = async (id) => {
+  const fundChan = async () => {
     try {
-      contract[id + 1].fund(1, {
-        value: ethers.utils.parseEther(fundAmount[id]),
+      contract[user.id + 1].fund(1, {
+        value: ethers.utils.parseEther(fundAmount),
       });
     } catch (error) {
       console.log(error);
     }
   };
 
-  function handleChange(e, index) {
-    console.log(e.target.value);
-    setFundAmount((prev) => {
-      let arr = [...prev];
-      arr[index] = e.target.value;
-      return arr;
-    });
-  }
 
   switch (currentState[user.id]) {
     case 0:
@@ -85,11 +77,11 @@ export default function ActionField({
             placeholder="Enter amount"
             className={strucStyle.input}
             type="number"
-            onChange={(e) => handleChange(e, user.id)}
+            onChange={(e) => setFundAmount(e.target.value)}
           />
           <button
             className={strucStyle.button}
-            onClick={() => fundChan(user.id)}
+            onClick={() => fundChan()}
           >
             Fund
           </button>

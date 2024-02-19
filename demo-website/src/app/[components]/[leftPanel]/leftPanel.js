@@ -7,6 +7,7 @@ import { useAnimate } from "framer-motion";
 
 export default function LeftPanel({ contract, getBalance }) {
   const [walletBalance, setWalletBalance] = useState(0.0);
+  const [flashLoanAmount, setFlashLoanAmount] = useState(0.0);
   const [modal, setModal] = useState("");
   const [scope, animate] = useAnimate();
 
@@ -33,7 +34,7 @@ export default function LeftPanel({ contract, getBalance }) {
     try {
       const conti = contract[3];
       const user1Contract = conti.connect(await getSigner(user3.id));
-      await user1Contract.startFlashLoan();
+      await user1Contract.startFlashLoan(flashLoanAmount);
       await getBalance();
       dodo();
       onSuccess();
@@ -78,8 +79,9 @@ export default function LeftPanel({ contract, getBalance }) {
               <div className={style.actionField}>
                 <input
                   className={strucStyle.input}
-                  type="text"
+                  type="number"
                   placeholder="Amount"
+                  onChange={(e) => setFlashLoanAmount(e.target.value)}
                 ></input>
                 <div className={strucStyle.button} onClick={() => flashLoan()}>
                   Request
