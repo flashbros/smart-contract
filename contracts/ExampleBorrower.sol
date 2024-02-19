@@ -34,7 +34,7 @@ contract ExampleBorrower is FlashBorrower {
         console.log("ExampleBorrower Received %s", msg.value);
     }
 
-    fallback() external {
+    fallback() external payable {
         console.log("ExampleBorrower Fallback, Received %s", msg.value);
     }
 }
