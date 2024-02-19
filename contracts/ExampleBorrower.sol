@@ -6,8 +6,13 @@ import "./ChannelLogic.sol";
 
 contract ExampleBorrower is FlashBorrower {
 
-   
+    ChannelLogic public channelLogic;
 
+    //channelLogic.flashLoan
+
+    function startFlashLoan() external {
+        channelLogic.flashLoan(this, 500);
+    }
 
     function onFlashLoan(
         address initiator,
@@ -17,6 +22,10 @@ contract ExampleBorrower is FlashBorrower {
         console.log("Flash loan initiated by: %s", initiator);
         console.log("Amount: %s", amount);
         console.log("Fee: %s", fee);
+
+        //DO ARBITRAGE TOMFOOLERY HERE
+
+        channelLogic.payBack{value: amount + fee}();
         
         return true;
     }
