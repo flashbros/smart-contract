@@ -337,7 +337,7 @@ contract ChannelLogic {
     function flashLoan(
     FlashBorrower receiver,
     uint256 amount) external returns (bool) {
-        require(amount <= _maxFlashLoan(), "Amount exceeds the flash loan limit, try to choose a smaller amount");
+        require(amount*10**18 <= _maxFlashLoan(), "Amount exceeds the flash loan limit, try to choose a smaller amount");
 
         //initialize variables
         uint256 old = address(this).balance;
