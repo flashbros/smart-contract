@@ -69,11 +69,11 @@ contract ChannelLogic {
 
     //Events
     event ChannelOpen();
-    event NewTransaction(uint indexed transactionId, address sender, address receiver, uint amount);
-    event PartyFinalized(int channel_id, address party);
-    event PartyFunded(address party, uint amount);
+
+    event ChannelFund();
+    event ChannelWithdraw();
+    event ChannelClose();
     event ContractBalanceUpdated(uint256 newBalance);
-    event ChannelFunded(int indexed channel_id, address indexed participant, uint256 amount);
    
     // Mapping: Channel_ID => Channel
     mapping(int => Channel) public channels;
@@ -186,14 +186,16 @@ contract ChannelLogic {
 
             // Log for tests, delete later
             console.log("Participant A has successfully funded the channel with ", channel.state.balance_A);
-                    emit ChannelFunded(channel_id, msg.sender, amount);
+                    emit ChannelFund();
+
         } else {
             channel.state.balance_B = amount;
             channel.control.funded_b = true;
 
             // Log for tests, delete later
             console.log("Participant B has successfully funded the channel with ", channel.state.balance_B);
-                    emit ChannelFunded(channel_id, msg.sender, amount);
+                    emit ChannelFund();
+
         }
 
         /*
@@ -258,6 +260,7 @@ contract ChannelLogic {
                 require(transferSuccess, "Transfer failed");
             }
         }
+        emit ChannelClose();
     }
     /**
     * Withdraws the balance of the caller if the channel has already been closed
@@ -295,6 +298,7 @@ contract ChannelLogic {
             (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
             require(transferSuccess, "Transfer failed");
         }
+        emit ChannelWithdraw();
     }
 
     
@@ -393,5 +397,6 @@ contract ChannelLogic {
     ) internal view returns (uint256) {
         return amount * flashLoanFee / 10000;
     }
+
 
 }

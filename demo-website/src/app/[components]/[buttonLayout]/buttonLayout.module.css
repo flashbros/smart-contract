@@ -1,0 +1,39 @@
+.ButtonLayout {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  bottom: 3px;
+}
+
+.button {
+  background-color: transparent;
+  border: solid 2px #4caf50;
+  color: #4caf50;
+  padding: 8px 16px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  transition-duration: 0.4s;
+  cursor: pointer;
+  border-radius: 12px;
+}
+
+.inactive {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  border: solid 2px #6c757d;
+  cursor: not-allowed;
+}
+
+.button:hover {
+  background-color: #4caf50;
+  color: white;
+}
+
+.inactive:hover {
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
