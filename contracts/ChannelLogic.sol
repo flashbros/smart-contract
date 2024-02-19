@@ -69,6 +69,7 @@ contract ChannelLogic {
 
     //Events
     event ChannelOpen();
+
     event ChannelFund();
     event ChannelWithdraw();
     event ChannelClose();
@@ -186,6 +187,7 @@ contract ChannelLogic {
             // Log for tests, delete later
             console.log("Participant A has successfully funded the channel with ", channel.state.balance_A);
                     emit ChannelFund();
+
         } else {
             channel.state.balance_B = amount;
             channel.control.funded_b = true;
@@ -193,6 +195,7 @@ contract ChannelLogic {
             // Log for tests, delete later
             console.log("Participant B has successfully funded the channel with ", channel.state.balance_B);
                     emit ChannelFund();
+
         }
 
         /*
@@ -394,5 +397,6 @@ contract ChannelLogic {
     ) internal view returns (uint256) {
         return amount * flashLoanFee / 10000;
     }
+
 
 }
