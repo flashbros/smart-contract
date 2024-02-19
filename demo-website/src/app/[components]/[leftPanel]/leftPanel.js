@@ -1,13 +1,18 @@
 import strucStyle from "./../../styles.module.css";
 import style from "./leftPanel.module.css";
+import { getSigner } from "../../../../../ethereum.js";
 
-export default function LeftPanel({ contract }) {
+export default function LeftPanel({ contract, getBalance }) {
   let walletBalance = 0;
 
   const flashLoan = async () => {
     try {
       const conti = contract[3];
-      await conti.startFlashLoan();
+      //console.log(conti);
+      const user1Contract = conti.connect(await getSigner(3));
+      //console.log(user1Contract);
+      await user1Contract.startFlashLoan();
+      await getBalance();
     } catch (e) {
       console.log(e);
     }
@@ -27,7 +32,9 @@ export default function LeftPanel({ contract }) {
                   type="text"
                   placeholder="Amount"
                 ></input>
-                <div className={strucStyle.button} onClick={() => flashLoan()}>Request</div>
+                <div className={strucStyle.button} onClick={() => flashLoan()}>
+                  Request
+                </div>
               </div>
               <div className={style.modal}>Sucess! FlashLoan granted.</div>
             </div>

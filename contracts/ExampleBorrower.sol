@@ -6,12 +6,12 @@ import "./ChannelLogic.sol";
 
 contract ExampleBorrower is FlashBorrower {
 
-    ChannelLogic public channelLogic;
-
-    //channelLogic.flashLoan
+    ChannelLogic public channelLogic = ChannelLogic(payable(0x5FbDB2315678afecb367f032d93F642f64180aa3));
 
     function startFlashLoan() external {
-        channelLogic.flashLoan(this, 500);
+        console.log("ExampleBorrower starting flash loan");
+        bool d = channelLogic.flashLoan(this, 500);
+        console.log("Flash loan result: %s", d);
     }
 
     function onFlashLoan(
@@ -25,9 +25,13 @@ contract ExampleBorrower is FlashBorrower {
 
         //DO ARBITRAGE TOMFOOLERY HERE
 
-        channelLogic.payBack{value: amount + fee}();
-        
+        channelLogic.payBack{value: (amount + fee)*10**18}();
+        console.log("ExampleBorrower paid back flash loan");
         return true;
+    }
+
+    function receiver() external payable {
+        console.log("Receiver %s", msg.value);
     }
 
     receive() external payable {

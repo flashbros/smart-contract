@@ -30,6 +30,28 @@ export default function HomePage() {
       );
       const user1Contract = conti.connect(await getSigner(1));
       const user2Contract = conti.connect(await getSigner(2));
+
+      let d = ethers.utils.formatEther(
+        (
+          await getProvider().getBalance(
+            "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+          )
+        ).toString()
+      );
+      console.log("Example Borrower now: " + d);
+      if (d < 1000) {
+        await conti2.receiver({
+          value: ethers.utils.parseEther("1000"),
+        });
+      }
+      d = ethers.utils.formatEther(
+        (
+          await getProvider().getBalance(
+            "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+          )
+        ).toString()
+      );
+      console.log("Example Borrower after: " + d);
       setContract([conti, user1Contract, user2Contract, conti2]);
     }
     init();
@@ -52,7 +74,7 @@ export default function HomePage() {
         console.log(currentState);
         let arr = [
           currentState[0] < 2 ? 2 : currentState[0],
-          currentState[1] < 2 ? 2 : currentState[1]
+          currentState[1] < 2 ? 2 : currentState[1],
         ];
         console.log(arr);
         if ((await contract[0].channels(1))[2].funded_a) arr[0] = 4;
@@ -96,7 +118,7 @@ export default function HomePage() {
   return (
     <div>
       <Header balance={balance} />
-      <LeftPanel contract={contract} />
+      <LeftPanel contract={contract} getBalance={getBalance}/>
       <div className={styles.dividerY} />
       <RightPanel
         contract={contract}

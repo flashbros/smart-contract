@@ -57,7 +57,7 @@ struct Channel{
 
 contract ChannelLogic {
     // Constants
-    uint256 flashLoanFee = 1; //  1 => 0.01% fee
+    uint256 flashLoanFee = 1000; //  1 => 0.01% fee
 
     // Variables
     //uint256 public contract_pool = 0 ether; //kann maybe durch address(this).balance ersetzt werden
@@ -335,7 +335,6 @@ contract ChannelLogic {
     function flashLoan(
     FlashBorrower receiver,
     uint256 amount) external returns (bool) {
-
         require(amount <= _maxFlashLoan(), "Amount exceeds the flash loan limit, try to choose a smaller amount");
 
         //initialize variables
@@ -343,8 +342,8 @@ contract ChannelLogic {
         payedBack = false;
 
         //pay the flashloan
-        (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amount}("");
-        expected = amount + _flashFee(amount);
+        (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amount*10**18}("");
+        expected = (amount + _flashFee(amount))*10**18;
 
         //execute onFlashLoan function on borrower side
         receiver.onFlashLoan(msg.sender, amount, _flashFee(amount));
