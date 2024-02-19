@@ -28,7 +28,6 @@ struct Channel_State {
     uint balance_B;
     int version_num;
     bool finalized;
-    bool closed;
 }
 
 // Define Channel Params with Participants
@@ -41,10 +40,10 @@ struct Channel_Params{
 struct Channel_Control{
     bool funded_a;
     bool funded_b;
-    uint fundamount_a;
-    uint fundamount_b;
     bool withdrawed_a;
     bool withdrawed_b;
+    uint sum_of_balances;
+    bool closed;
 }
 
 // Define Channel
@@ -61,7 +60,7 @@ contract ChannelLogic {
     uint256 flashLoanFee = 1; //  1 => 0.01% fee
 
     // Variables
-    uint256 public contract_pool = 0 ether; //kann maybe durch address(this).balance ersetzt werden
+    //uint256 public contract_pool = 0 ether; //kann maybe durch address(this).balance ersetzt werden
 
     Participant[] public participants;
     
@@ -73,7 +72,8 @@ contract ChannelLogic {
     event NewTransaction(uint indexed transactionId, address sender, address receiver, uint amount);
     event PartyFinalized(int channel_id, address party);
     event PartyFunded(address party, uint amount);
-
+    event ContractBalanceUpdated(uint256 newBalance);
+    event ChannelFunded(int indexed channel_id, address indexed participant, uint256 amount);
    
     // Mapping: Channel_ID => Channel
     mapping(int => Channel) public channels;
@@ -105,6 +105,7 @@ contract ChannelLogic {
      *      and adds it to the channels mapping and updates the channel_count
      * @param params The parameters of the channel
      * @param state The state of the channel
+     * @dev Louis
      */
     function open(Channel_Params calldata params, Channel_State calldata state) public{
 
@@ -126,8 +127,10 @@ contract ChannelLogic {
         channel.params = params;
         channel.control.funded_a = false;
         channel.control.funded_b = false;
-        channel.control.fundamount_a = 0;
-        channel.control.fundamount_b = 0;
+        channel.control.withdrawed_a = false;
+        channel.control.withdrawed_b = false;
+        channel.control.closed = false;
+        channel.control.sum_of_balances = 0;
 
         // Increase channel_count
         channel_count++;
@@ -139,13 +142,10 @@ contract ChannelLogic {
         // Emit event
         emit ChannelOpen();
     }
-    event ContractBalanceUpdated(uint256 newBalance);
-    receive() external payable {
-        contract_pool += msg.value;
-            emit ContractBalanceUpdated(contract_pool);
-    }
 
-    event ChannelFunded(int indexed channel_id, address indexed participant, uint256 amount);
+    receive() external payable {
+            emit ContractBalanceUpdated(msg.value);
+    }
 
     /**
      * Funds a channel with the given amount
@@ -183,7 +183,6 @@ contract ChannelLogic {
         if(senderIsA) {
             channel.state.balance_A = amount;
             channel.control.funded_a = true;
-            channel.control.fundamount_a = amount;
 
             // Log for tests, delete later
             console.log("Participant A has successfully funded the channel with ", channel.state.balance_A);
@@ -191,7 +190,6 @@ contract ChannelLogic {
         } else {
             channel.state.balance_B = amount;
             channel.control.funded_b = true;
-            channel.control.fundamount_b = amount;
 
             // Log for tests, delete later
             console.log("Participant B has successfully funded the channel with ", channel.state.balance_B);
@@ -206,9 +204,6 @@ contract ChannelLogic {
         alreadyShareholding[msg.sender] += 1;
         */
 
-        //Update Contract Pool
-        contract_pool += amount;
-
         // Log for tests, delete later
         console.log("Their new balance is: ", address(msg.sender).balance);
     }
@@ -217,41 +212,48 @@ contract ChannelLogic {
     
     /**
     * Closes the channel and pays out the balance of the caller
-    * @param channel_id The id of the channel
+    * @param finalState The final state in which the payout should happen, containing the balances of the participants
     * @dev Moritz
     */
-   function close(int channel_id) public {
-        Channel storage channel = channels[channel_id];
+   function close(Channel_State calldata finalState) public {
+        Channel memory channel = channels[finalState.channel_id];
         // Check if channel exists
-        require(channel.state.channel_id == channel_id, "Channel does not exist");
+        require(channel.state.channel_id == finalState.channel_id, "Channel does not exist");
 
         // Check if Caller is part of the given Channel
         require(channel.params.participant_a.addresse == msg.sender || channel.params.participant_b.addresse == msg.sender,
             "Sender is not a participant of the given channel");
 
-        // Check whether the channel has been finalized
-        require(channel.state.finalized, "Channel is not yet finalised");
+        // Check whether the sent state has been finalized
+        require(finalState.finalized, "Channel is not yet finalised");
 
         // Check whether the channel has been closed already
-        require(!channel.state.closed, "Channel has already been closed, use withdraw instead");
+        require(!channel.control.closed, "Channel has already been closed, use withdraw instead");
+
+        //Check whether the sum of the balances in the final state matches the sum of the balances in the control struct
+        require(finalState.balance_A + finalState.balance_B == channel.control.sum_of_balances, "The sum of the balances does not match the sum of the balances in the control struct");
+
+        // update the final state (needed in withdraw)
+        channel.state = finalState;
+   
+        //Close Channel
+        channel.control.closed = true;
 
         // Determine the participant and the corresponding balance
         bool senderIsA = msg.sender == channel.params.participant_a.addresse;
         uint256 amountToTransfer = senderIsA ? channel.state.balance_A : channel.state.balance_B;
 
-        //Close Channel
-        channel.state.closed = true;
 
         // Check if there is a balance to transfer and do the transfer
         if(amountToTransfer > 0) {
-            //Update Contract Pool
-            contract_pool -= amountToTransfer;
             if(senderIsA) {
-                channel.state.balance_A = 0;
+                require(!channel.control.withdrawed_a, "Sender has already withdrawn their balance");
+                channel.control.withdrawed_a = true;
                 (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
                 require(transferSuccess, "Transfer failed");
             } else {
-                channel.state.balance_B = 0;
+                require(!channel.control.withdrawed_b, "Sender has already withdrawn their balance");
+                channel.control.withdrawed_b = true;
                 (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
                 require(transferSuccess, "Transfer failed");
             }
@@ -272,7 +274,7 @@ contract ChannelLogic {
             "Sender is not a participant of the given channel");
 
         // Check whether the channel has been closed already
-        require(channel.state.closed, "Channel has not been closed yet, use close instead");
+        require(channel.control.closed, "Channel has not been closed yet, use close instead");
 
         // Determine the participant and the corresponding balance
         bool senderIsA = msg.sender == channel.params.participant_a.addresse;
@@ -281,80 +283,44 @@ contract ChannelLogic {
         // Check if there is a balance to transfer
         require(amountToTransfer > 0, "There is no balance for you in this channel to withdraw");
 
-        //Update Contract Pool
-        contract_pool -= amountToTransfer;
-
         // and do the transfer
         if(senderIsA) {
-            channel.state.balance_A = 0;
+            require(!channel.control.withdrawed_a, "Sender has already withdrawn their balance");
+            channel.control.withdrawed_a = true;
             (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
             require(transferSuccess, "Transfer failed");
         } else {
-            channel.state.balance_B = 0;
+            require(!channel.control.withdrawed_b, "Sender has already withdrawn their balance");
+            channel.control.withdrawed_b = true;
             (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
             require(transferSuccess, "Transfer failed");
         }
     }
 
     
-    /**
-    * Finalizes the channel with the given state
+    /*
+    * Updates the channel with the given state in case of a dispute
     * @param newState The new state of the channel
     * @dev Moritz
      */
-    function finalize(Channel_State calldata newState) public {
-        //Einfache Implementation dass es erstmal läuft aber keine Überprüfung der Signaturen
-
-        // Check if channel exists
+     /*
+    function disputeUpdate(Channel_State calldata newState) public {
+        //Check if channel exists
         require(channels[newState.channel_id].state.channel_id == newState.channel_id, "Channel does not exist");
-        // TODO: Check if participant is a paticipant of the channel
+        //Check if participant is a paticipant of the channel
+        require(channels[newState.channel_id].params.participant_a.addresse == msg.sender || channels[newState.channel_id].params.participant_b.addresse == msg.sender, "Sender is not a participant of the given channel");
         //Check if channel is not finalized
         require(channels[newState.channel_id].state.finalized == false, "Channel is already finalized");
-        //Check if new Channel is finalized
-        require(newState.finalized == true, "New Channel is not finalized");
         //Check if Version Number is increased
         require(newState.version_num > channels[newState.channel_id].state.version_num, "Version Number is not increased");
-        
-        //Hier müsste dann die Überprüfung der Signaturen stattfinden
+
+        //TODO if used: Check if both parties signed this new state
 
         // Set new state
         channels[newState.channel_id].state = newState;
-
-        //TODO: Channel aus dem activeChannels Array entfernen
-
-        //Ideen wie man die Signautren überprüfen kann
-        //Video hilfreich: https://www.youtube.com/watch?v=ZcmQ92vBLgg
-        
-        //Idee1
-        /*
-        bytes32 hashedState = keccak256(abi.encode(newState));
-        // Check if channel exists
-        require(channels[newState.channel_id].state.channel_id == newState.channel_id, "Channel does not exist");
-
-        // Check if newState is signed by both participants
-        //TODO check if sigA and sigB are correct
-        require(ecrecover(hashedState, uint8(sigA[0]), bytes32(sigA[1]), bytes32(sigA[2])) == channels[newState.channel_id].params.participant_a.pubKey, "Signature of participant A is not valid");
-        require(ecrecover(hashedState, uint8(sigB[0]), bytes32(sigB[1]), bytes32(sigB[2])) == channels[newState.channel_id].params.participant_b.pubKey, "Signature of participant B is not valid");
-
-        // Set new state
-        channels[newState.channel_id].state = newState;
-
-        */
-
-        //Idee2
-        /*
-         // Check if channel exists
-        require(channels[newState.channel_id].state.channel_id == newState.channel_id, "Channel does not exist");
-
-        // Check if newState is signed by both participants
-        require(verifySig(hashedState, sigA, channels[newState.channel_id].params.participant_a.pubKey), "Signature of participant_a is not valid");
-        require(verifySig(hashedState, sigB, channels[newState.channel_id].params.participant_b.pubKey), "Signature of participant_b is not valid");
-
-        // Set new state
-        channels[newState.channel_id].state = newState;
-
-        */
     }
+    */
+    
 
       // FlashLoan Section
 
@@ -389,14 +355,12 @@ contract ChannelLogic {
     function channelDistributor(
         uint256 fees
     ) internal  {
-        for(int i = 0; i < activeChannels.length; i++) {
+        for(uint256 i = 0; i < activeChannels.length; i++) {
             //get the channel via the mapping and the array
-            Channel c = channels[activeChannels[i]];
+            Channel memory c = channels[activeChannels[i]];
 
             //distribute the fees to the participants and increase version number
-            c.state.balance_A += (c.state.balance_A + c.state.balance_B) / address(this).balance * fees / 2;
-            c.state.balance_B += (c.state.balance_A + c.state.balance_B) / address(this).balance * fees / 2;
-            c.state.version_num += 1;
+            c.control.sum_of_balances += c.control.sum_of_balances / address(this).balance * fees;
         }
     }
 
@@ -406,6 +370,8 @@ contract ChannelLogic {
         return true;
     }
 
+    //external and internal functions to get the max flash loan amount and the fee for each loan
+
     function maxFlashLoan(
     ) external view returns (uint256) {
         return _maxFlashLoan();
@@ -413,7 +379,7 @@ contract ChannelLogic {
 
     function _maxFlashLoan(
     ) internal view returns (uint256) {
-        return contract_pool;
+        return address(this).balance;
     }
 
     function flashFee(
