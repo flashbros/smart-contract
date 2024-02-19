@@ -6,6 +6,7 @@ import Header from "./[components]/[header]/header";
 import { useState, useEffect } from "react";
 import { getContract, getSigner, getProvider } from "../../../ethereum.js";
 import ChannelLogic from "../../../contracts/ChannelLogic.json";
+import ExampleBorrower from "../../../contracts/ExampleBorrower.json";
 import { ethers } from "ethers";
 
 export default function HomePage() {
@@ -22,9 +23,14 @@ export default function HomePage() {
         ChannelLogic.abi,
         0 // Use the first account as the signer
       );
+      const conti2 = await getContract(
+        "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+        ExampleBorrower.abi,
+        3 // Use the fourth account as the signer
+      );
       const user1Contract = conti.connect(await getSigner(1));
       const user2Contract = conti.connect(await getSigner(2));
-      setContract([conti, user1Contract, user2Contract]);
+      setContract([conti, user1Contract, user2Contract, conti2]);
     }
     init();
   }, []);
@@ -90,7 +96,7 @@ export default function HomePage() {
   return (
     <div>
       <Header balance={balance} />
-      <LeftPanel />
+      <LeftPanel contract={contract} />
       <div className={styles.dividerY} />
       <RightPanel
         contract={contract}

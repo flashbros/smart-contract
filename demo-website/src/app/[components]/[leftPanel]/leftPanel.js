@@ -1,8 +1,17 @@
 import strucStyle from "./../../styles.module.css";
 import style from "./leftPanel.module.css";
 
-export default function LeftPanel() {
+export default function LeftPanel({ contract }) {
   let walletBalance = 0;
+
+  const flashLoan = async () => {
+    try {
+      const conti = contract[3];
+      await conti.startFlashLoan();
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   return (
     <div className={strucStyle.LeftPanel}>
@@ -18,7 +27,7 @@ export default function LeftPanel() {
                   type="text"
                   placeholder="Amount"
                 ></input>
-                <div className={strucStyle.button}>Request</div>
+                <div className={strucStyle.button} onClick={() => flashLoan()}>Request</div>
               </div>
               <div className={style.modal}>Sucess! FlashLoan granted.</div>
             </div>
