@@ -11,7 +11,6 @@ import { ethers } from "ethers";
 
 export default function HomePage() {
   const [contract, setContract] = useState(null); // The contract object
-  const [channelCount, setChannelCount] = useState(0);
   const [balance, setBalance] = useState(0.0);
 
   const [currentState, setState] = useState([0, 0]);
@@ -59,27 +58,35 @@ export default function HomePage() {
 
   useEffect(() => {
     if (contract) {
-      getCount();
       getBalance();
       const conti = contract[0];
       conti.removeAllListeners();
+      const eventFilter = conti.filters.ChannelFund();
+      getProvider()
+        .getLogs({
+          ...eventFilter,
+          fromBlock: 0,
+          toBlock: "latest",
+        })
+        .then((logs) => {
+          console.log(logs);
+        });
       conti.on("ChannelOpen", (e) => {
         console.log("ChannelOpen - Event");
-        getCount();
         setState([2, 2]);
       });
       conti.on("ChannelFund", async (e) => {
         console.log("ChannelFund - Event");
         getBalance();
-        console.log(currentState);
+  
         let arr = [
           currentState[0] < 2 ? 2 : currentState[0],
           currentState[1] < 2 ? 2 : currentState[1],
         ];
-        console.log(arr);
+        
         if ((await contract[0].channels(1))[2].funded_a) arr[0] = 4;
         if ((await contract[0].channels(1))[2].funded_b) arr[1] = 4;
-        console.log(arr);
+
         setState(arr);
       });
       conti.on("ChannelClose", () => {
@@ -87,17 +94,6 @@ export default function HomePage() {
       });
     }
   }, [contract]);
-
-  const getCount = async () => {
-    try {
-      console.log("getCount");
-      const ch = await contract[0].channel_count();
-      console.log(ch.toNumber());
-      setChannelCount(ch.toNumber());
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   const getBalance = async () => {
     try {
@@ -124,6 +120,7 @@ export default function HomePage() {
         contract={contract}
         currentState={currentState}
         setState={setState}
+        balance={balance}
       />
     </div>
   );

@@ -4,8 +4,12 @@ import style from "./rightPanel.module.css";
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 
-
-export default function RightPanel({ contract, currentState, setState }) {
+export default function RightPanel({
+  contract,
+  currentState,
+  setState,
+  balance,
+}) {
   let user1 = { name: "Alice", id: 0 };
   let user2 = { name: "Bob", id: 1 };
 
@@ -33,20 +37,14 @@ export default function RightPanel({ contract, currentState, setState }) {
         chSta.classList.add(style.fadeIn);
         setD1(true);
       } else if (currentState[0] >= 2 || currentState[1] >= 2) {
-        console.log("works!");
         let chSta = document.getElementById("channelStatus");
         chSta.innerHTML =
           "Channel Funds: " +
-          (parseFloat(
+          parseFloat(
             ethers.utils.formatEther(
-              (await contract[0].channels(1))[0].balance_A.toString()
+              (await contract[0].channels(1))[2].sum_of_balances.toString()
             )
           ) +
-            parseFloat(
-              ethers.utils.formatEther(
-                (await contract[0].channels(1))[0].balance_B.toString()
-              )
-            )) +
           " Eth";
       }
     }
@@ -57,23 +55,22 @@ export default function RightPanel({ contract, currentState, setState }) {
     async function dodo() {
       if (contract) {
         let chSta = document.getElementById("channelStatus");
+        console.log(
+          "Sum_of_balances:",
+          ethers.utils.formatEther(
+            (await contract[0].channels(1))[2].sum_of_balances.toString()
+          )
+        );
         chSta.innerHTML =
           "Channel Funds: " +
-          (parseFloat(
-            ethers.utils.formatEther(
-              (await contract[0].channels(1))[0].balance_A.toString()
-            )
+          ethers.utils.formatEther(
+            (await contract[0].channels(1))[2].sum_of_balances.toString()
           ) +
-            parseFloat(
-              ethers.utils.formatEther(
-                (await contract[0].channels(1))[0].balance_B.toString()
-              )
-            )) +
           " Eth";
       }
     }
     dodo();
-  }, [contract]);
+  }, [contract, balance]);
 
   return (
     <div className={strucStyle.RightPanel}>

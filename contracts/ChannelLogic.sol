@@ -69,10 +69,10 @@ contract ChannelLogic {
 
     //Events
     event ChannelOpen();
-
-    event ChannelFund();
+    event ChannelFund(bool senderIsA, uint256 amount);
     event ChannelWithdraw();
     event ChannelClose();
+    event loanHappend();
     event ContractBalanceUpdated(uint256 newBalance);
    
     // Mapping: Channel_ID => Channel
@@ -186,7 +186,7 @@ contract ChannelLogic {
 
             // Log for tests, delete later
             console.log("Participant A has successfully funded the channel with ", channel.state.balance_A);
-                    emit ChannelFund();
+                    emit ChannelFund(senderIsA, amount);
 
         } else {
             channel.state.balance_B = amount;
@@ -194,9 +194,11 @@ contract ChannelLogic {
 
             // Log for tests, delete later
             console.log("Participant B has successfully funded the channel with ", channel.state.balance_B);
-                    emit ChannelFund();
+                    emit ChannelFund(senderIsA, amount);
 
         }
+
+        channel.control.sum_of_balances += amount;
 
         /*
         balances[msg.sender] += amount;
@@ -351,7 +353,7 @@ contract ChannelLogic {
         require(payedBack, "Payback did not happen or failed");
 
         channelDistributor(_flashFee(amount));
-
+        emit loanHappend();
         return true;
     }
 
@@ -364,6 +366,7 @@ contract ChannelLogic {
 
             //distribute the fees to the participants and increase version number
             c.control.sum_of_balances += c.control.sum_of_balances / address(this).balance * fees;
+            console.log("Hier: ",c.control.sum_of_balances);
         }
     }
 
