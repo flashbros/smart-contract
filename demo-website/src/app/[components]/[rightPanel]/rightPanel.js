@@ -1,9 +1,8 @@
 import strucStyle from "./../../styles.module.css";
 import UserPanel from "./userPanel";
 import style from "./rightPanel.module.css";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ethers } from "ethers";
-import { useState } from "react";
 
 
 export default function RightPanel({ contract, currentState, setState }) {

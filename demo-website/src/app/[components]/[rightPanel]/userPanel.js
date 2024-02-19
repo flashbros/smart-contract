@@ -15,7 +15,7 @@ export default function UserPanel({
   let channelID = 1;
   const [walletBalance, setWalletBalance] = useState(0.0);
   const [userBalance, setUserBalance] = useState(0.0);
-
+   
   useEffect(() => {
     async function dodo() {
       if (contract) {
@@ -44,7 +44,6 @@ export default function UserPanel({
         </div>
         <div className={style.right}>
           <div className={style.budget}>{userBalance} ETH - User Balance</div>
-          <div className={style.budget}>0 ETH - Earned</div>
         </div>
       </div>
       <div className={style.actionField}>
