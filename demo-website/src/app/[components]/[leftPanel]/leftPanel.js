@@ -75,21 +75,19 @@ export default function LeftPanel({ contract, getBalance }) {
           <div className={style.container}>
             <div>Charlie</div>
             <div>Wallet: {walletBalance} Eth</div>
-            <div>
-              <div className={style.actionField}>
-                <input
-                  className={strucStyle.input}
-                  type="number"
-                  placeholder="Amount"
-                  onChange={(e) => setFlashLoanAmount(e.target.value)}
-                ></input>
-                <div className={strucStyle.button} onClick={() => flashLoan()}>
-                  Request
-                </div>
+            <div className={style.actionField}>
+              <input
+                className={strucStyle.input}
+                type="number"
+                placeholder="Amount"
+                onChange={(e) => setFlashLoanAmount(e.target.value)}
+              ></input>
+              <div className={strucStyle.button} onClick={() => flashLoan()}>
+                Request
               </div>
-              <div ref={scope} id="modal" className={style.modal}>
-                {modal}
-              </div>
+            </div>
+            <div ref={scope} className={style.modal}>
+              {modal}
             </div>
           </div>
           <div className={style.log}>Log</div>
