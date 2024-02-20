@@ -7,7 +7,7 @@ import { stagger, animate } from "framer-motion";
 
 export default function LeftPanel({ contract, getBalance }) {
   const [walletBalance, setWalletBalance] = useState(0.0);
-  const [flashLoanAmount, setFlashLoanAmount] = useState(0.0);
+  const [flashLoanAmount, setFlashLoanAmount] = useState("");
   const [modal, setModal] = useState("");
   const [log, setLog] = useState([""]);
 
@@ -43,11 +43,12 @@ export default function LeftPanel({ contract, getBalance }) {
     }
   };
 
-  const onSuccess = () => {
+  const onSuccess = async () => {
     setLog(["FlashLoan executed", "FlashLoan successful"]);
     setModal("FlashLoan successful!");
     const modal = document.getElementsByClassName(style.modal)[0];
-    animate(modal, { opacity: 1, backgroundColor: "#46cc34" }, { duration: 1 });
+    await animate(modal, { backgroundColor: "#46cc34" }, { duration: 0 });
+    animate(modal, { opacity: 1 }, { duration: 1 });
     setTimeout(() => {
       animate(modal, { opacity: 0 }, { duration: 1 });
     }, 3000);
@@ -57,7 +58,8 @@ export default function LeftPanel({ contract, getBalance }) {
     console.log(e);
     setModal("Error! FlashLoan failed.");
     const modal = document.getElementsByClassName(style.modal)[0];
-    animate(modal, { opacity: 1, backgroundColor: "#CA3737" }, { duration: 1 });
+    await animate(modal, { backgroundColor: "#CA3737" }, { duration: 0 });
+    animate(modal, { opacity: 1 }, { duration: 1 });
     console.log(log);
     setLog(["FlashLoan executed", "FlashLoan failed", e.reason]);
     setTimeout(() => {
