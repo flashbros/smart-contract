@@ -3,6 +3,7 @@ import UserPanel from "./userPanel";
 import style from "./rightPanel.module.css";
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
+import { animate } from "framer-motion";
 
 export default function RightPanel({
   contract,
@@ -14,38 +15,35 @@ export default function RightPanel({
   let user2 = { name: "Bob", id: 1 };
 
   const [d1, setD1] = useState(false);
+  const [channelBalance, setChannelBalance] = useState(0);
 
   let users = [
     {
       id: 0,
       name: "Alice",
-      addresse: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      address: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
     },
     {
       id: 1,
       name: "Bob",
-      addresse: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+      address: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
     },
   ];
 
   useEffect(() => {
     async function dodo() {
       if (currentState[0] >= 2 && currentState[1] >= 2 && !d1) {
-        let dots = document.getElementById("dots");
-        dots.classList.add(style.fadeIn);
-        let chSta = document.getElementById("channelStatus");
-        chSta.classList.add(style.fadeIn);
         setD1(true);
-      } else if (currentState[0] >= 2 || currentState[1] >= 2) {
-        let chSta = document.getElementById("channelStatus");
-        chSta.innerHTML =
-          "Channel Funds: " +
-          parseFloat(
-            ethers.utils.formatEther(
-              (await contract[0].channels(1))[2].sum_of_balances.toString()
-            )
-          ) +
-          " Eth";
+        let chSta = document.getElementsByClassName(style.channelStatus)[0];
+        let conDots = document.getElementsByClassName(style.connectionDots)[0];
+        animate(conDots, { opacity: 1 }, { duration: 1 });
+        animate(chSta, { opacity: 1 }, { duration: 1 });
+      } else if (currentState[0] >= 4 || currentState[1] >= 4) {
+        setChannelBalance(
+          ethers.utils.formatEther(
+            (await contract[0].channels(1))[2].sum_of_balances.toString()
+          )
+        );
       }
     }
     dodo();
@@ -54,29 +52,27 @@ export default function RightPanel({
   useEffect(() => {
     async function dodo() {
       if (contract) {
-        let chSta = document.getElementById("channelStatus");
         console.log(
           "Sum_of_balances:",
           ethers.utils.formatEther(
             (await contract[0].channels(1))[2].sum_of_balances.toString()
           )
         );
-        chSta.innerHTML =
-          "Channel Funds: " +
+        setChannelBalance(
           ethers.utils.formatEther(
             (await contract[0].channels(1))[2].sum_of_balances.toString()
-          ) +
-          " Eth";
+          )
+        );
       }
     }
     dodo();
-  }, [contract, balance]);
+  }, [balance]); //TODO: contract sollte man entfernen können
 
   return (
     <div className={strucStyle.RightPanel}>
       <div className={strucStyle.RelativeWrapper}>
         <div className={style.flexContainer}>
-          <div id="dots" className={style.connectionDots} />
+          <div className={style.connectionDots} />
           <UserPanel
             user={user1}
             users={users}
@@ -84,8 +80,8 @@ export default function RightPanel({
             currentState={currentState}
             setState={setState}
           />
-          <div id="channelStatus" className={style.channelStatus}>
-            ff
+          <div className={style.channelStatus}>
+            Channel Fund: {channelBalance} ETH
           </div>
           <UserPanel
             user={user2}
