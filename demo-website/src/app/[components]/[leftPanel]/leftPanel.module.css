@@ -13,7 +13,8 @@
   transition: 0.3s;
   padding: 6px;
   top: 40%;
-  left: 12.5%;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .actionField {
@@ -51,12 +52,12 @@
   height: fit-content;
   background-color: #f5f5f5;
   border-radius: 0 0 10px 10px;
-  transition: 0.3s;
   padding: 6px;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
   z-index: -10;
   top: 40%;
-  left: 25%;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .logTitle {
