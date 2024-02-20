@@ -9,6 +9,7 @@ export default function LeftPanel({ contract, getBalance }) {
   const [walletBalance, setWalletBalance] = useState(0.0);
   const [flashLoanAmount, setFlashLoanAmount] = useState(0.0);
   const [modal, setModal] = useState("");
+  const [log, setLog] = useState([""]);
 
   let user3 = { name: "Charlie", id: 3 };
 
@@ -43,6 +44,7 @@ export default function LeftPanel({ contract, getBalance }) {
   };
 
   const onSuccess = () => {
+    setLog(["FlashLoan executed", "FlashLoan successful"]);
     setModal("FlashLoan successful!");
     const modal = document.getElementsByClassName(style.modal)[0];
     animate(modal, { opacity: 1, backgroundColor: "#46cc34" }, { duration: 1 });
@@ -55,14 +57,22 @@ export default function LeftPanel({ contract, getBalance }) {
     console.log(e);
     setModal("Error! FlashLoan failed.");
     const modal = document.getElementsByClassName(style.modal)[0];
-    const item = document.getElementsByClassName(style.item);
-    await animate(item, { opacity: 0 }, { duration: 0 });
     animate(modal, { opacity: 1, backgroundColor: "#CA3737" }, { duration: 1 });
-    animate(item, { opacity: 1 }, { delay: stagger(0.3) });
+    console.log(log);
+    setLog(["FlashLoan executed", "FlashLoan failed",e.reason]);
     setTimeout(() => {
       animate(modal, { opacity: 0 }, { duration: 1, delay: 1 });
     }, 3000);
   };
+
+  useEffect(() => {
+    async function dodo() {
+      const item = document.getElementsByClassName(style.item);
+      await animate(item, { opacity: 0 }, { duration: 0 });
+      animate(item, { opacity: 1 }, { delay: stagger(0.3) });
+    }
+    dodo();
+  }, [log]);
 
   return (
     <div className={strucStyle.LeftPanel}>
@@ -87,9 +97,11 @@ export default function LeftPanel({ contract, getBalance }) {
           <div className={style.log}>
             <div className={style.logTitle}>Log</div>
             <div className={style.logContent}>
-              <div className={style.item}>1. FlashLoan failed!</div>
-              <div className={style.item}>2. FlashLoan failed!</div>
-              <div className={style.item}>3. FlashLoan failed!</div>
+              {log.map((entry, index) => (
+                <div key={index} className={style.item}>
+                  {entry}
+                </div>
+              ))}
             </div>
           </div>
         </div>

@@ -13,7 +13,7 @@ export default function ActionField({
 }) {
   const filterdUsers = users.filter((u) => u.id !== user.id);
 
-  const [fundAmount, setFundAmount] = useState(0);
+  const [fundAmount, setFundAmount] = useState("0");
 
   const openChan = async () => {
     try {
@@ -44,6 +44,7 @@ export default function ActionField({
       contract[user.id + 1].fund(1, {
         value: ethers.utils.parseEther(fundAmount),
       });
+      //TODO: handle error, das nur fund > 0
     } catch (error) {
       console.log(error);
     }
