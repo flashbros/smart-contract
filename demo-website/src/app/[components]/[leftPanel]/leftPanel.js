@@ -3,7 +3,7 @@ import style from "./leftPanel.module.css";
 import { getSigner, getProvider } from "../../../../../ethereum.js";
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
-import { stagger, animate } from "framer-motion";
+import { stagger, animate, motion } from "framer-motion";
 
 export default function LeftPanel({ contract, getBalance }) {
   const [walletBalance, setWalletBalance] = useState(0.0);

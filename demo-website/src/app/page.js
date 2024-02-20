@@ -83,7 +83,6 @@ export default function HomePage() {
       conti.on("ChannelFund", async (e) => {
         console.log("ChannelFund - Event");
         getBalance();
-
         onFund();
       });
       conti.on("ChannelClose", () => {
@@ -113,7 +112,7 @@ export default function HomePage() {
           )
         ).toString()
       );
-      console.log(d);
+      console.log("Balance: " + d);
       setBalance(d);
     } catch (error) {
       console.log(error);
