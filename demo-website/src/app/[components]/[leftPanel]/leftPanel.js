@@ -59,7 +59,7 @@ export default function LeftPanel({ contract, getBalance }) {
     const modal = document.getElementsByClassName(style.modal)[0];
     animate(modal, { opacity: 1, backgroundColor: "#CA3737" }, { duration: 1 });
     console.log(log);
-    setLog(["FlashLoan executed", "FlashLoan failed",e.reason]);
+    setLog(["FlashLoan executed", "FlashLoan failed", e.reason]);
     setTimeout(() => {
       animate(modal, { opacity: 0 }, { duration: 1, delay: 1 });
     }, 3000);
@@ -76,33 +76,31 @@ export default function LeftPanel({ contract, getBalance }) {
 
   return (
     <div className={strucStyle.LeftPanel}>
-      <div className={strucStyle.RelativeWrapper}>
-        <div className={style.pp}>
-          <div className={style.container}>
-            <div>Charlie</div>
-            <div>Wallet: {walletBalance} Eth</div>
-            <div className={style.actionField}>
-              <input
-                className={strucStyle.input}
-                type="number"
-                placeholder="Amount"
-                onChange={(e) => setFlashLoanAmount(e.target.value)}
-              ></input>
-              <div className={strucStyle.button} onClick={() => flashLoan()}>
-                Request
-              </div>
+      <div className={style.pp}>
+        <div className={style.container}>
+          <div>Charlie</div>
+          <div>Wallet: {walletBalance} ETH</div>
+          <div className={style.actionField}>
+            <input
+              className={strucStyle.input}
+              type="number"
+              placeholder="Amount"
+              onChange={(e) => setFlashLoanAmount(e.target.value)}
+            ></input>
+            <div className={strucStyle.button} onClick={() => flashLoan()}>
+              Request
             </div>
-            <div className={style.modal}>{modal}</div>
           </div>
-          <div className={style.log}>
-            <div className={style.logTitle}>Log</div>
-            <div className={style.logContent}>
-              {log.map((entry, index) => (
-                <div key={index} className={style.item}>
-                  {entry}
-                </div>
-              ))}
-            </div>
+          <div className={style.modal}>{modal}</div>
+        </div>
+        <div className={style.log}>
+          <div className={style.logTitle}>Log</div>
+          <div className={style.logContent}>
+            {log.map((entry, index) => (
+              <div key={index} className={style.item}>
+                {entry}
+              </div>
+            ))}
           </div>
         </div>
       </div>
