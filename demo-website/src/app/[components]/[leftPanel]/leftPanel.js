@@ -3,13 +3,12 @@ import style from "./leftPanel.module.css";
 import { getSigner, getProvider } from "../../../../../ethereum.js";
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
-import { useAnimate } from "framer-motion";
+import { stagger, animate } from "framer-motion";
 
 export default function LeftPanel({ contract, getBalance }) {
   const [walletBalance, setWalletBalance] = useState(0.0);
   const [flashLoanAmount, setFlashLoanAmount] = useState(0.0);
   const [modal, setModal] = useState("");
-  const [scope, animate] = useAnimate();
 
   let user3 = { name: "Charlie", id: 3 };
 
@@ -45,26 +44,23 @@ export default function LeftPanel({ contract, getBalance }) {
 
   const onSuccess = () => {
     setModal("FlashLoan successful!");
-    animate(
-      scope.current,
-      { opacity: 1, backgroundColor: "#46cc34" },
-      { duration: 1 }
-    );
+    const modal = document.getElementsByClassName(style.modal)[0];
+    animate(modal, { opacity: 1, backgroundColor: "#46cc34" }, { duration: 1 });
     setTimeout(() => {
-      animate(scope.current, { opacity: 0 }, { duration: 1 });
+      animate(modal, { opacity: 0 }, { duration: 1 });
     }, 3000);
   };
 
-  const onError = (e) => {
+  const onError = async (e) => {
     console.log(e);
     setModal("Error! FlashLoan failed.");
-    animate(
-      scope.current,
-      { opacity: 1, backgroundColor: "#CA3737" },
-      { duration: 1 }
-    );
+    const modal = document.getElementsByClassName(style.modal)[0];
+    const item = document.getElementsByClassName(style.item);
+    await animate(item, { opacity: 0 }, { duration: 0 });
+    animate(modal, { opacity: 1, backgroundColor: "#CA3737" }, { duration: 1 });
+    animate(item, { opacity: 1 }, { delay: stagger(0.3) });
     setTimeout(() => {
-      animate(scope.current, { opacity: 0 }, { duration: 1 });
+      animate(modal, { opacity: 0 }, { duration: 1, delay: 1 });
     }, 3000);
   };
 
@@ -86,11 +82,16 @@ export default function LeftPanel({ contract, getBalance }) {
                 Request
               </div>
             </div>
-            <div ref={scope} className={style.modal}>
-              {modal}
+            <div className={style.modal}>{modal}</div>
+          </div>
+          <div className={style.log}>
+            <div className={style.logTitle}>Log</div>
+            <div className={style.logContent}>
+              <div className={style.item}>1. FlashLoan failed!</div>
+              <div className={style.item}>2. FlashLoan failed!</div>
+              <div className={style.item}>3. FlashLoan failed!</div>
             </div>
           </div>
-          <div className={style.log}>Log</div>
         </div>
       </div>
     </div>
