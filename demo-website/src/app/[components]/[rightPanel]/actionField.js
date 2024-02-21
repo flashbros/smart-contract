@@ -15,6 +15,7 @@ export default function ActionField({
   const filterdUsers = users.filter((u) => u.id !== user.id);
 
   const [fundAmount, setFundAmount] = useState("0");
+  const [error, setError] = useState("");
 
   const openChan = async () => {
     try {
@@ -44,7 +45,12 @@ export default function ActionField({
     try {
       // check if fundAmount is only a number
       console.log(parseFloat(fundAmount));
+      if (parseFloat(fundAmount) > 10000) {
+        setError("Wrong Input! Only numbers less 10000!");
+        throw new Error("fundAmount is greater than 10000")
+      }
       if (parseFloat(fundAmount) <= 0) {
+        setError("Wrong Input! Only numbers greater 0!");
         throw new Error("fundAmount is not a positive number");
       }
       contract[user.id + 1].fund(1, {
@@ -85,7 +91,7 @@ export default function ActionField({
       return (
         <>
           <div id={"errorMsg" + user.id} className={style.error}>
-            Wrong Input! Only numbers greater 0!
+            {error}
           </div>
           <input
             placeholder="Enter amount"
