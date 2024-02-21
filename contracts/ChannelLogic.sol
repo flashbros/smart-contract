@@ -363,7 +363,7 @@ contract ChannelLogic {
         console.log("Reached channelDistributor");
         for(uint256 i = 0; i < activeChannels.length; i++) {
             //get the channel via the mapping and the array
-            Channel memory c = channels[activeChannels[i]];
+            Channel storage c = channels[activeChannels[i]];
             //distribute the fees to the participants and increase version number
             console.log("sum of balances davor: ",c.control.sum_of_balances);
 

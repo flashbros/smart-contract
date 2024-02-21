@@ -54,6 +54,9 @@ export default function RightPanel({
     async function dodo() {
       if (contract) {
         console.log(
+          (await contract[0].channels(1))[2].sum_of_balances.toString()
+        );
+        console.log(
           "Sum_of_balances:",
           ethers.utils.formatEther(
             (await contract[0].channels(1))[2].sum_of_balances.toString()
