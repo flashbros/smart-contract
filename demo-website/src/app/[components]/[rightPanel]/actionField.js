@@ -41,15 +41,20 @@ export default function ActionField({
 
   const fundChan = async () => {
     try {
+      // check if fundAmount is only a number
+      if (isNaN(parseFloat(fundAmount))) {
+        throw new Error("fundAmount is not a number");
+      }
+      if(parseFloat(fundAmount) <= 0){
+        throw new Error("fundAmount is not a positive number");
+      }
       contract[user.id + 1].fund(1, {
         value: ethers.utils.parseEther(fundAmount),
       });
-      //TODO: handle error, das nur fund > 0
     } catch (error) {
       console.log(error);
     }
   };
-
 
   switch (currentState[user.id]) {
     case 0:
@@ -80,10 +85,7 @@ export default function ActionField({
             type="number"
             onChange={(e) => setFundAmount(e.target.value)}
           />
-          <button
-            className={strucStyle.button}
-            onClick={() => fundChan()}
-          >
+          <button className={strucStyle.button} onClick={() => fundChan()}>
             Fund
           </button>
         </>

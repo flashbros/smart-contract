@@ -19,6 +19,11 @@
   opacity: 0;
 }
 
+.channelTitle {
+  text-decoration: underline 2px;
+  margin-bottom: 4px;
+}
+
 .connectionDots {
   position: absolute;
   top: 50%;

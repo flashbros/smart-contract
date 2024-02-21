@@ -12,7 +12,6 @@ export default function UserPanel({
   currentState,
   setState,
 }) {
-  let channelID = 1;
   const [walletBalance, setWalletBalance] = useState(0.0);
   const [userBalance, setUserBalance] = useState(0.0);
 
@@ -39,10 +38,9 @@ export default function UserPanel({
       <div className={style.topWrapper}>
         <div className={style.left}>
           <div>{user.name}</div>
-          <div>ChannelID: {channelID}</div>
+          <div>Wallet: {walletBalance} ETH</div>
         </div>
         <div className={style.right}>
-          <div>{walletBalance} ETH - Wallet</div>
           <div>{userBalance} ETH - User Balance</div>
         </div>
       </div>

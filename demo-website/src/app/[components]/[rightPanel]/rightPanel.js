@@ -13,6 +13,7 @@ export default function RightPanel({
 }) {
   let user1 = { name: "Alice", id: 0 };
   let user2 = { name: "Bob", id: 1 };
+  let channel = { id: "1" };
 
   const [d1, setD1] = useState(false);
   const [channelBalance, setChannelBalance] = useState(0);
@@ -66,7 +67,7 @@ export default function RightPanel({
       }
     }
     dodo();
-  }, [balance]); //TODO: contract sollte man entfernen können
+  }, [balance]);
 
   return (
     <div className={strucStyle.RightPanel}>
@@ -81,7 +82,9 @@ export default function RightPanel({
             setState={setState}
           />
           <div className={style.channelStatus}>
-            <div>Channel Fund: {channelBalance} ETH</div>
+            <div className={style.channelTitle}>Channel</div>
+            <div>ID: {channel.id}</div>
+            <div>Balance: {channelBalance} ETH</div>
           </div>
           <UserPanel
             user={user2}

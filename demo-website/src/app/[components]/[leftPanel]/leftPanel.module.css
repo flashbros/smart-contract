@@ -32,7 +32,7 @@
   width: min-content;
   white-space: nowrap;
   padding: 2px 8px;
-  height: 40px;
+  height: 30px;
   left: 50%;
   transform: translateX(-50%);
   border-radius: 20px;
@@ -63,7 +63,7 @@
 .logTitle {
   position: relative;
   text-decoration: underline 2px;
-  margin-bottom: 6px;
+  margin: 4px 0 4px 0;
 }
 
 .logContent {
