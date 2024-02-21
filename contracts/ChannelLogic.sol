@@ -23,7 +23,7 @@ struct Participant {
 
 // Define Channel State
 struct Channel_State {
-    int channel_id;
+    uint channel_id;
     uint balance_A;
     uint balance_B;
     int version_num;
@@ -76,7 +76,7 @@ contract ChannelLogic {
     event ContractBalanceUpdated(uint256 newBalance);
    
     // Mapping: Channel_ID => Channel
-    mapping(int => Channel) public channels;
+    mapping(uint => Channel) public channels;
 
     /*
     // Mapping: User_Address => Balance, keeps track which address has funded which amount
@@ -90,7 +90,7 @@ contract ChannelLogic {
     */
 
     // Dynamic Array: Keeps track which channels are currently active
-    int[] activeChannels;
+    uint[] activeChannels;
 
     // Compare two Participants
     function compareParticipants(Participant memory a, Participant memory b) private pure returns (bool) {
@@ -153,7 +153,7 @@ contract ChannelLogic {
      * @param channel_id The id of the channel
      * @dev Oli Moritz Louis
      */
-    function fund (int channel_id) public payable {
+    function fund (uint channel_id) public payable {
         Channel storage channel = channels[channel_id];
 
         // Check if channel exists
@@ -269,7 +269,7 @@ contract ChannelLogic {
     * @param channel_id The id of the channel
     * @dev Moritz
      */
-    function withdraw(int channel_id) public {
+    function withdraw(uint channel_id) public {
         Channel storage channel = channels[channel_id];
         // Check if channel exists
         require(channel.state.channel_id == channel_id, "Channel does not exist");
@@ -352,21 +352,23 @@ contract ChannelLogic {
 
         require(payedBack, "Payback did not happen or failed");
 
-        channelDistributor(_flashFee(amount));
+        channelDistributor(amount, _flashFee(amount));
         emit loanHappend();
         return true;
     }
 
     function channelDistributor(
-        uint256 fees
+        uint256 amount, uint256 fees
     ) internal  {
+        console.log("Reached channelDistributor");
         for(uint256 i = 0; i < activeChannels.length; i++) {
             //get the channel via the mapping and the array
             Channel memory c = channels[activeChannels[i]];
-
             //distribute the fees to the participants and increase version number
-            c.control.sum_of_balances += c.control.sum_of_balances / address(this).balance * fees;
-            console.log("Hier: ",c.control.sum_of_balances);
+            console.log("sum of balances davor: ",c.control.sum_of_balances);
+
+            c.control.sum_of_balances += ((c.control.sum_of_balances*10**2) / (address(this).balance-fees*10**18) * fees / 10**2)*10**18;
+            console.log("Sum of balances nach dem Update: ",c.control.sum_of_balances);
         }
     }
 
