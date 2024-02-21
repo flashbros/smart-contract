@@ -51,6 +51,7 @@ export default function UserPanel({
           user={user}
           users={users}
           contract={contract}
+          walletBalance={walletBalance}
         />
       </div>
       <ButtonLayout
