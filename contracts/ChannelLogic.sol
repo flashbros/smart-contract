@@ -352,13 +352,13 @@ contract ChannelLogic {
 
         require(payedBack, "Payback did not happen or failed");
 
-        channelDistributor(amount, _flashFee(amount));
+        channelDistributor(_flashFee(amount));
         emit loanHappend();
         return true;
     }
 
     function channelDistributor(
-        uint256 amount, uint256 fees
+        uint256 fees
     ) internal  {
         console.log("Reached channelDistributor");
         for(uint256 i = 0; i < activeChannels.length; i++) {
