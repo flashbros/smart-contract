@@ -33,18 +33,31 @@ export default function RightPanel({
 
   useEffect(() => {
     async function dodo() {
+      console.log(currentState);
       if (currentState[0] >= 2 && currentState[1] >= 2 && !d1) {
         setD1(true);
         let chSta = document.getElementsByClassName(style.channelStatus)[0];
         let conDots = document.getElementsByClassName(style.connectionDots)[0];
         animate(conDots, { opacity: 1 }, { duration: 1 });
-        animate(chSta, { opacity: 1 }, { duration: 1 });
-      } else if (currentState[0] >= 4 || currentState[1] >= 4) {
-        setChannelBalance(
-          ethers.utils.formatEther(
-            (await contract[0].channels(1))[2].sum_of_balances.toString()
-          )
-        );
+        animate(chSta, { opacity: 1 }, { duration: 0.5 });
+      } else if (currentState[0] == 6 || currentState[1] == 6) {
+        console.log("close");
+        if (currentState[0] == 6) {
+          let conDots = document.getElementsByClassName(
+            style.connectionDotsTop
+          )[0];
+          animate(conDots, { opacity: 0 }, { duration: 0.5 });
+        }
+        if (currentState[1] == 6) {
+          let conDots = document.getElementsByClassName(
+            style.connectionDotsBottom
+          )[0];
+          animate(conDots, { opacity: 0 }, { duration: 0.5 });
+        }
+        if (currentState[0] == 6 && currentState[1] == 6) {
+          let chSta = document.getElementsByClassName(style.channelStatus)[0];
+          animate(chSta, { opacity: 0 }, { duration: 0.5 });
+        }
       }
     }
     dodo();
@@ -67,7 +80,10 @@ export default function RightPanel({
     <div className={strucStyle.RightPanel}>
       <div className={strucStyle.RelativeWrapper}>
         <div className={style.flexContainer}>
-          <div className={style.connectionDots} />
+          <div className={style.connectionDots}>
+            <div className={style.connectionDotsTop} />
+            <div className={style.connectionDotsBottom} />
+          </div>
           <UserPanel
             user={user1}
             users={users}

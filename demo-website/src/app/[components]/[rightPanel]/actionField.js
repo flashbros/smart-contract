@@ -34,7 +34,6 @@ export default function ActionField({
         balance_B: 0,
         version_num: 0,
         finalized: false,
-        closed: false,
       };
       contract[0].open(Channel_Params, Channel_State);
     } catch (error) {
@@ -64,6 +63,29 @@ export default function ActionField({
         await animate(errorMsg, { opacity: 0 }, { duration: 1 });
         animate(errorMsg, { display: "none" }, { duration: 0 });
       }, 3000);
+      console.log(error);
+    }
+  };
+
+  const closeChan = async () => {
+    try {
+      contract[user.id + 1].close(1);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const withdrawChan = async () => {
+    try {
+      const Channel_State = {
+        channel_id: 1,
+        balance_A: 0,
+        balance_B: 0,
+        version_num: 1,
+        finalized: false,
+      };
+      contract[user.id + 1].withdraw(Channel_State);
+    } catch (error) {
       console.log(error);
     }
   };
@@ -108,8 +130,10 @@ export default function ActionField({
     case 4:
       return <>Press a function!</>;
     case 5:
-      return <>5</>;
+      return <>Press a function!</>;
+    case 6:
+      return <>Transaction done!</>
     default:
-      return <>wrong state!</>;
+      return <>error</>;
   }
 }
