@@ -3,6 +3,7 @@ import style from "./userPanel.module.css";
 import { getSigner } from "../../../../../ethereum.js";
 import { ethers } from "ethers";
 const { useState } = require("react");
+import { animate } from "framer-motion";
 
 export default function ActionField({
   currentState,
@@ -42,16 +43,20 @@ export default function ActionField({
   const fundChan = async () => {
     try {
       // check if fundAmount is only a number
-      if (isNaN(parseFloat(fundAmount))) {
-        throw new Error("fundAmount is not a number");
-      }
-      if(parseFloat(fundAmount) <= 0){
+      console.log(parseFloat(fundAmount));
+      if (parseFloat(fundAmount) <= 0) {
         throw new Error("fundAmount is not a positive number");
       }
       contract[user.id + 1].fund(1, {
         value: ethers.utils.parseEther(fundAmount),
       });
     } catch (error) {
+      const errorMsg = document.getElementById("errorMsg" + user.id);
+      animate(errorMsg, { opacity: 1, display: "flex" }, { duration: 1 });
+      setTimeout(async () => {
+        await animate(errorMsg, { opacity: 0 }, { duration: 1 });
+        animate(errorMsg, { display: "none" }, { duration: 0 });
+      }, 3000);
       console.log(error);
     }
   };
@@ -75,10 +80,13 @@ export default function ActionField({
         </>
       );
     case 2:
-      return <>2</>;
+      return <>Press a function!</>;
     case 3:
       return (
         <>
+          <div id={"errorMsg" + user.id} className={style.error}>
+            Wrong Input! Only numbers greater 0!
+          </div>
           <input
             placeholder="Enter amount"
             className={strucStyle.input}
@@ -91,7 +99,7 @@ export default function ActionField({
         </>
       );
     case 4:
-      return <>4</>;
+      return <>Press a function!</>;
     case 5:
       return <>5</>;
     default:
