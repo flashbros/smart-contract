@@ -11,6 +11,7 @@ export default function ActionField({
   user,
   users,
   contract,
+  walletBalance,
 }) {
   const filterdUsers = users.filter((u) => u.id !== user.id);
 
@@ -45,9 +46,9 @@ export default function ActionField({
     try {
       // check if fundAmount is only a number
       console.log(parseFloat(fundAmount));
-      if (parseFloat(fundAmount) > 10000) {
-        setError("Wrong Input! Only numbers less 10000!");
-        throw new Error("fundAmount is greater than 10000")
+      if (parseFloat(fundAmount) > walletBalance) {
+        setError(`Wrong Input! Only numbers less ${walletBalance}!`);
+        throw new Error(`Wrong Input! Only numbers less ${walletBalance}!`);
       }
       if (parseFloat(fundAmount) <= 0) {
         setError("Wrong Input! Only numbers greater 0!");
