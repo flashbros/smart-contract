@@ -8,6 +8,7 @@ import { getContract, getSigner, getProvider } from "../../../ethereum.js";
 import ChannelLogic from "../../../contracts/ChannelLogic.json";
 import ExampleBorrower from "../../../contracts/ExampleBorrower.json";
 import { ethers } from "ethers";
+import { set } from "lodash";
 
 export default function HomePage() {
   const [contract, setContract] = useState(null); // The contract object
@@ -74,6 +75,8 @@ export default function HomePage() {
         })
         .then((logs) => {
           if (logs.length > 0) {
+            setState1(2);
+            setState2(2);
             onFund();
           }
         });

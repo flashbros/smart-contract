@@ -34,7 +34,7 @@ export default function LeftPanel({ contract, getBalance }) {
     try {
       const conti = contract[3];
       const user1Contract = conti.connect(await getSigner(user3.id));
-      await user1Contract.startFlashLoan(flashLoanAmount);
+      await user1Contract.startFlashLoan(ethers.utils.parseEther(flashLoanAmount));
       await getBalance();
       dodo();
       onSuccess();
@@ -60,7 +60,6 @@ export default function LeftPanel({ contract, getBalance }) {
     const modal = document.getElementsByClassName(style.modal)[0];
     await animate(modal, { backgroundColor: "#CA3737" }, { duration: 0 });
     animate(modal, { opacity: 1 }, { duration: 1 });
-    console.log(log);
     setLog(["FlashLoan executed", "FlashLoan failed", e.reason]);
     setTimeout(() => {
       animate(modal, { opacity: 0 }, { duration: 1, delay: 1 });

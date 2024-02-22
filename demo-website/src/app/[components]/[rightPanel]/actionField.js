@@ -44,7 +44,7 @@ export default function ActionField({
     try {
       // check if fundAmount is only a number
       console.log(parseFloat(fundAmount));
-      if (parseFloat(fundAmount) > walletBalance) {
+      if (parseFloat(fundAmount) >= walletBalance) {
         setError(`Wrong Input! Only numbers less ${walletBalance}!`);
         throw new Error(`Wrong Input! Only numbers less ${walletBalance}!`);
       }
