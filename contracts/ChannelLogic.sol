@@ -70,7 +70,7 @@ contract ChannelLogic {
     //Events
     event ChannelOpen();
     event ChannelFund(bool senderIsA, uint256 amount);
-    event ChannelWithdraw();
+    event ChannelWithdraw(bool senderIsA);
     event ChannelClose(bool senderIsA);
     event loanHappend();
     event ContractBalanceUpdated(uint256 newBalance);
@@ -220,7 +220,7 @@ contract ChannelLogic {
     * @dev Moritz
     */
    function close(Channel_State calldata finalState) public {
-        Channel memory channel = channels[finalState.channel_id];
+        Channel storage channel = channels[finalState.channel_id];
         // Check if channel exists
         require(channel.state.channel_id == finalState.channel_id, "Channel does not exist");
 
@@ -254,12 +254,14 @@ contract ChannelLogic {
                 require(!channel.control.withdrawed_a, "Sender has already withdrawn their balance");
                 channel.control.withdrawed_a = true;
                 channel.state.balance_A = 0;
+                channel.control.sum_of_balances -= amountToTransfer;
                 (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
                 require(transferSuccess, "Transfer failed");    
             } else {
                 require(!channel.control.withdrawed_b, "Sender has already withdrawn their balance");
                 channel.control.withdrawed_b = true;
                 channel.state.balance_B = 0;
+                channel.control.sum_of_balances -= amountToTransfer;
                 (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
                 require(transferSuccess, "Transfer failed");
                 
@@ -315,7 +317,7 @@ contract ChannelLogic {
             (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
             require(transferSuccess, "Transfer failed");
         }
-        emit ChannelWithdraw();
+        emit ChannelWithdraw(senderIsA);
     }
 
     

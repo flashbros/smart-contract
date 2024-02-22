@@ -91,24 +91,23 @@ export default function HomePage() {
       conti.on("ChannelClose", (e) => {
         console.log("ChannelClose - Event");
         if (e) {
-          setState1(7);
+          setState1(8);
         } else {
-          setState2(7);
+          setState2(8);
         }
       });
       conti.on("ChannelWithdraw", (e) => {
         console.log("ChannelClose - Event");
         if (e) {
-          setState1(7);
+          setState1(8);
         } else {
-          setState2(7);
+          setState2(8);
         }
       });
     }
   }, [contract]);
 
   const onFund = async () => {
-    console.trace();
     if ((await contract[0].channels(1))[2].funded_a) {
       setState1(4);
     }

@@ -152,6 +152,14 @@ export default function ActionField({
     case 6:
       return <>nur noch withdraw!</>;
     case 7:
+      return (
+        <>
+          <button className={strucStyle.button} onClick={() => withdrawChan()}>
+            Withdraw
+          </button>
+        </>
+      );
+    case 8:
       return <>Transaction done!</>;
     default:
       return <>error</>;

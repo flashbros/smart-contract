@@ -35,7 +35,7 @@ export default function UserPanel({
       }
     }
     dodo();
-  }, [contract, ownState]);
+  }, [contract, ownState, channelBalance]);
 
   return (
     <div className={style.userContainer}>

@@ -4,7 +4,6 @@ import style from "./rightPanel.module.css";
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import { animate } from "framer-motion";
-import { cons } from "fp-ts/lib/NonEmptyArray2v";
 
 export default function RightPanel({
   contract,
@@ -42,21 +41,21 @@ export default function RightPanel({
         let conDots = document.getElementsByClassName(style.connectionDots)[0];
         animate(conDots, { opacity: 1 }, { duration: 1 });
         animate(chSta, { opacity: 1 }, { duration: 0.5 });
-      } else if (state1 == 7 || state2 == 7) {
+      } else if (state1 == 8 || state2 == 8) {
         console.log("close");
-        if (state1 == 7) {
+        if (state1 == 8) {
           let conDots = document.getElementsByClassName(
             style.connectionDotsTop
           )[0];
           animate(conDots, { opacity: 0 }, { duration: 0.5 });
         }
-        if (state2 == 7) {
+        if (state2 == 8) {
           let conDots = document.getElementsByClassName(
             style.connectionDotsBottom
           )[0];
           animate(conDots, { opacity: 0 }, { duration: 0.5 });
         }
-        if (state1 == 7 && state2 == 7) {
+        if (state1 == 8 && state2 == 8) {
           let chSta = document.getElementsByClassName(style.channelStatus)[0];
           animate(chSta, { opacity: 0 }, { duration: 0.5 });
         }
@@ -68,6 +67,7 @@ export default function RightPanel({
   useEffect(() => {
     async function dodo() {
       if (contract) {
+        console.log("moin servus moin: " + (await contract[0].channels(1))[2].sum_of_balances.toString())
         setChannelBalance(
           ethers.utils.formatEther(
             (await contract[0].channels(1))[2].sum_of_balances.toString()
