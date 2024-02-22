@@ -1,11 +1,17 @@
 import style from "./buttonLayout.module.css";
 import { useState, useEffect } from "react";
 
-export default function ButtonLayout({ user, currentState, setState }) {
+export default function ButtonLayout({
+  user,
+  state,
+  setState,
+  otherState,
+  setOtherState,
+}) {
   const [inactive, setInactiveButtons] = useState([true, true, true, true]);
 
   useEffect(() => {
-    switch (currentState[user.id]) {
+    switch (state) {
       case 0:
         setInactiveButtons([false, true, true, true]);
         break;
@@ -21,49 +27,41 @@ export default function ButtonLayout({ user, currentState, setState }) {
       default:
         setInactiveButtons([true, true, true, true]);
     }
-  }, [currentState]);
+  }, [state]);
 
   return (
     <div className={style.ButtonLayout}>
       <div
         className={`${style.button} ${inactive[0] ? style.inactive : ""}`}
-        onClick={() =>
-          !inactive[0]
-            ? setState([
-                user.id == 0 ? 1 : currentState[0],
-                user.id == 1 ? 1 : currentState[1],
-              ])
-            : ""
-        }
+        onClick={() => (!inactive[0] ? setState(1) : "")}
       >
         Open
       </div>
       <div
         className={`${style.button} ${inactive[1] ? style.inactive : ""}`}
-        onClick={() =>
-          !inactive[1]
-            ? setState([
-                user.id == 0 ? 3 : currentState[0],
-                user.id == 1 ? 3 : currentState[1],
-              ])
-            : ""
-        }
+        onClick={() => (!inactive[1] ? setState(3) : "")}
       >
         Fund
       </div>
       <div
         className={`${style.button} ${inactive[2] ? style.inactive : ""}`}
-        onClick={() =>
-          !inactive[2]
-            ? setState([user.id == 0 ? 6 : 5, user.id == 1 ? 6 : 5])
-            : ""
-        }
+        onClick={() => {
+          if (!inactive[2]) {
+            setState(6);
+            setOtherState(5);
+          }
+        }}
       >
         Close
       </div>
       <div
         className={`${style.button} ${inactive[3] ? style.inactive : ""}`}
-        onClick={() => (!inactive[3] ? setState([6, 6]) : "")}
+        onClick={() => {
+          if (!inactive[3]) {
+            setState(6);
+            setOtherState(6);
+          }
+        }}
       >
         Withdraw
       </div>

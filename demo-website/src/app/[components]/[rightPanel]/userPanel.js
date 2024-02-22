@@ -9,8 +9,10 @@ export default function UserPanel({
   user = { name: "user", id: 0 },
   users = [{ name: "user", id: 0 }],
   contract,
-  currentState,
-  setState,
+  state1,
+  state2,
+  setState1,
+  setState2,
 }) {
   const [walletBalance, setWalletBalance] = useState(0.0);
   const [userBalance, setUserBalance] = useState(0.0);
@@ -31,7 +33,7 @@ export default function UserPanel({
       }
     }
     dodo();
-  }, [contract, currentState]);
+  }, [contract, state1, state2]);
 
   return (
     <div className={style.userContainer}>
@@ -46,8 +48,7 @@ export default function UserPanel({
       </div>
       <div className={style.actionField}>
         <ActionField
-          currentState={currentState}
-          setState={setState}
+          state={user.id === 0 ? state1 : state2}
           user={user}
           users={users}
           contract={contract}
@@ -56,8 +57,10 @@ export default function UserPanel({
       </div>
       <ButtonLayout
         user={user}
-        currentState={currentState}
-        setState={setState}
+        state={user.id === 0 ? state1 : state2}
+        setState={user.id === 0 ? setState1 : setState2}
+        otherState={user.id === 0 ? state2 : state1}
+        setOtherState={user.id === 0 ? setState2 : setState1}
       />
     </div>
   );

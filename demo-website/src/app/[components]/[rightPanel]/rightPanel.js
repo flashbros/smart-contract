@@ -7,8 +7,10 @@ import { animate } from "framer-motion";
 
 export default function RightPanel({
   contract,
-  currentState,
-  setState,
+  state1,
+  state2,
+  setState1,
+  setState2,
   balance,
 }) {
   let user1 = { name: "Alice", id: 0 };
@@ -33,35 +35,34 @@ export default function RightPanel({
 
   useEffect(() => {
     async function dodo() {
-      console.log(currentState);
-      if (currentState[0] >= 2 && currentState[1] >= 2 && !d1) {
+      if (state1 >= 2 && state2 >= 2 && !d1) {
         setD1(true);
         let chSta = document.getElementsByClassName(style.channelStatus)[0];
         let conDots = document.getElementsByClassName(style.connectionDots)[0];
         animate(conDots, { opacity: 1 }, { duration: 1 });
         animate(chSta, { opacity: 1 }, { duration: 0.5 });
-      } else if (currentState[0] == 6 || currentState[1] == 6) {
+      } else if (state1 == 6 || state2 == 6) {
         console.log("close");
-        if (currentState[0] == 6) {
+        if (state1 == 6) {
           let conDots = document.getElementsByClassName(
             style.connectionDotsTop
           )[0];
           animate(conDots, { opacity: 0 }, { duration: 0.5 });
         }
-        if (currentState[1] == 6) {
+        if (state2 == 6) {
           let conDots = document.getElementsByClassName(
             style.connectionDotsBottom
           )[0];
           animate(conDots, { opacity: 0 }, { duration: 0.5 });
         }
-        if (currentState[0] == 6 && currentState[1] == 6) {
+        if (state1 == 6 && state2 == 6) {
           let chSta = document.getElementsByClassName(style.channelStatus)[0];
           animate(chSta, { opacity: 0 }, { duration: 0.5 });
         }
       }
     }
     dodo();
-  }, [currentState]);
+  }, [state1, state2]);
 
   useEffect(() => {
     async function dodo() {
@@ -88,8 +89,10 @@ export default function RightPanel({
             user={user1}
             users={users}
             contract={contract}
-            currentState={currentState}
-            setState={setState}
+            state1={state1}
+            state2={state2}
+            setState1={setState1}
+            setState2={setState2}
           />
           <div className={style.channelStatus}>
             <div className={style.channelTitle}>Channel</div>
@@ -100,8 +103,10 @@ export default function RightPanel({
             user={user2}
             users={users}
             contract={contract}
-            currentState={currentState}
-            setState={setState}
+            state1={state1}
+            state2={state2}
+            setState1={setState1}
+            setState2={setState2}
           />
         </div>
       </div>

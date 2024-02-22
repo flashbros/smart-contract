@@ -6,8 +6,7 @@ const { useState } = require("react");
 import { animate } from "framer-motion";
 
 export default function ActionField({
-  currentState,
-  setState,
+  state,
   user,
   users,
   contract,
@@ -90,7 +89,7 @@ export default function ActionField({
     }
   };
 
-  switch (currentState[user.id]) {
+  switch (state) {
     case 0:
       return <>Press a function!</>;
     case 1:
@@ -117,7 +116,7 @@ export default function ActionField({
             {error}
           </div>
           <input
-            placeholder="Enter amount"
+            placeholder="Amount"
             className={strucStyle.input}
             type="number"
             onChange={(e) => setFundAmount(e.target.value)}
