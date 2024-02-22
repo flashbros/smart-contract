@@ -34,7 +34,7 @@ export default function LeftPanel({ contract, getBalance }) {
     try {
       const conti = contract[3];
       const user1Contract = conti.connect(await getSigner(user3.id));
-      await user1Contract.startFlashLoan(ethers.utils.parseEther(flashLoanAmount));
+      await user1Contract.startFlashLoan(flashLoanAmount);
       await getBalance();
       dodo();
       onSuccess();
