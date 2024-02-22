@@ -11,10 +11,12 @@ export default function ActionField({
   users,
   contract,
   walletBalance,
+  channelBalance,
 }) {
   const filterdUsers = users.filter((u) => u.id !== user.id);
 
   const [fundAmount, setFundAmount] = useState("0");
+  const [closeAmount, setCloseAmount] = useState("0");
   const [error, setError] = useState("");
 
   const openChan = async () => {
@@ -66,24 +68,26 @@ export default function ActionField({
     }
   };
 
-  const closeChan = async () => {
+  const withdrawChan = async () => {
     try {
-      contract[user.id + 1].close(1);
+      contract[user.id + 1].withdraw(1);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const withdrawChan = async () => {
+  const closeChan = async () => {
     try {
       const Channel_State = {
         channel_id: 1,
-        balance_A: 0,
-        balance_B: 0,
+        balance_A: ethers.utils.parseEther(closeAmount),
+        balance_B: ethers.utils.parseEther(
+          (channelBalance - parseFloat(closeAmount)).toString()
+        ),
         version_num: 1,
-        finalized: false,
+        finalized: true,
       };
-      contract[user.id + 1].withdraw(Channel_State);
+      contract[user.id + 1].close(Channel_State);
     } catch (error) {
       console.log(error);
     }
@@ -129,9 +133,26 @@ export default function ActionField({
     case 4:
       return <>Press a function!</>;
     case 5:
-      return <>Press a function!</>;
+      return (
+        <>
+          <div id={"errorMsg" + user.id} className={style.error}>
+            {error}
+          </div>
+          <input
+            placeholder="Amount"
+            className={strucStyle.input}
+            type="number"
+            onChange={(e) => setCloseAmount(e.target.value)}
+          />
+          <button className={strucStyle.button} onClick={() => closeChan()}>
+            Close
+          </button>
+        </>
+      );
     case 6:
-      return <>Transaction done!</>
+      return <>nur noch withdraw!</>;
+    case 7:
+      return <>Transaction done!</>;
     default:
       return <>error</>;
   }

@@ -4,6 +4,7 @@ import style from "./rightPanel.module.css";
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import { animate } from "framer-motion";
+import { cons } from "fp-ts/lib/NonEmptyArray2v";
 
 export default function RightPanel({
   contract,
@@ -41,21 +42,21 @@ export default function RightPanel({
         let conDots = document.getElementsByClassName(style.connectionDots)[0];
         animate(conDots, { opacity: 1 }, { duration: 1 });
         animate(chSta, { opacity: 1 }, { duration: 0.5 });
-      } else if (state1 == 6 || state2 == 6) {
+      } else if (state1 == 7 || state2 == 7) {
         console.log("close");
-        if (state1 == 6) {
+        if (state1 == 7) {
           let conDots = document.getElementsByClassName(
             style.connectionDotsTop
           )[0];
           animate(conDots, { opacity: 0 }, { duration: 0.5 });
         }
-        if (state2 == 6) {
+        if (state2 == 7) {
           let conDots = document.getElementsByClassName(
             style.connectionDotsBottom
           )[0];
           animate(conDots, { opacity: 0 }, { duration: 0.5 });
         }
-        if (state1 == 6 && state2 == 6) {
+        if (state1 == 7 && state2 == 7) {
           let chSta = document.getElementsByClassName(style.channelStatus)[0];
           animate(chSta, { opacity: 0 }, { duration: 0.5 });
         }
@@ -77,6 +78,10 @@ export default function RightPanel({
     dodo();
   }, [balance]);
 
+  useEffect(() => {
+    console.log("Channel Balance: " + channelBalance);
+  }, [channelBalance]);
+
   return (
     <div className={strucStyle.RightPanel}>
       <div className={strucStyle.RelativeWrapper}>
@@ -89,10 +94,11 @@ export default function RightPanel({
             user={user1}
             users={users}
             contract={contract}
-            state1={state1}
-            state2={state2}
-            setState1={setState1}
-            setState2={setState2}
+            ownState={state1}
+            otherState={state2}
+            setState={setState1}
+            setOtherState={setState2}
+            channelBalance={channelBalance}
           />
           <div className={style.channelStatus}>
             <div className={style.channelTitle}>Channel</div>
@@ -103,10 +109,11 @@ export default function RightPanel({
             user={user2}
             users={users}
             contract={contract}
-            state1={state1}
-            state2={state2}
-            setState1={setState1}
-            setState2={setState2}
+            ownState={state2}
+            otherState={state1}
+            setState={setState2}
+            setOtherState={setState1}
+            channelBalance={channelBalance}
           />
         </div>
       </div>

@@ -71,7 +71,7 @@ contract ChannelLogic {
     event ChannelOpen();
     event ChannelFund(bool senderIsA, uint256 amount);
     event ChannelWithdraw();
-    event ChannelClose();
+    event ChannelClose(bool senderIsA);
     event loanHappend();
     event ContractBalanceUpdated(uint256 newBalance);
    
@@ -262,8 +262,9 @@ contract ChannelLogic {
                 require(transferSuccess, "Transfer failed");
             }
         }
-        emit ChannelClose();
+        emit ChannelClose(senderIsA);
     }
+
     /**
     * Withdraws the balance of the caller if the channel has already been closed
     * @param channel_id The id of the channel

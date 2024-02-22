@@ -21,7 +21,7 @@ export default function ButtonLayout({
       case 4:
         setInactiveButtons([true, true, false, true]);
         break;
-      case 5:
+      case 6:
         setInactiveButtons([true, true, true, false]);
         break;
       default:
@@ -47,8 +47,8 @@ export default function ButtonLayout({
         className={`${style.button} ${inactive[2] ? style.inactive : ""}`}
         onClick={() => {
           if (!inactive[2]) {
-            setState(6);
-            setOtherState(5);
+            setState(5);
+            setOtherState(6);
           }
         }}
       >
@@ -58,8 +58,7 @@ export default function ButtonLayout({
         className={`${style.button} ${inactive[3] ? style.inactive : ""}`}
         onClick={() => {
           if (!inactive[3]) {
-            setState(6);
-            setOtherState(6);
+            setState(7);
           }
         }}
       >

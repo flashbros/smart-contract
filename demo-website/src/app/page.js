@@ -8,7 +8,6 @@ import { getContract, getSigner, getProvider } from "../../../ethereum.js";
 import ChannelLogic from "../../../contracts/ChannelLogic.json";
 import ExampleBorrower from "../../../contracts/ExampleBorrower.json";
 import { ethers } from "ethers";
-import { set } from "lodash";
 
 export default function HomePage() {
   const [contract, setContract] = useState(null); // The contract object
@@ -63,7 +62,6 @@ export default function HomePage() {
 
   useEffect(() => {
     if (contract) {
-      getBalance();
       const conti = contract[0];
       conti.removeAllListeners();
       const fundEventFilter = conti.filters.ChannelFund();
@@ -74,10 +72,11 @@ export default function HomePage() {
           toBlock: "latest",
         })
         .then((logs) => {
-          if (logs.length > 0) {
+          if (logs.length > 0 && state1 < 2 && state2 < 2) {
             setState1(2);
             setState2(2);
-            onFund();
+            console.log("ChannelFund - Logdd");
+            
           }
         });
       conti.on("ChannelOpen", (e) => {
@@ -87,22 +86,35 @@ export default function HomePage() {
       });
       conti.on("ChannelFund", async (e) => {
         console.log("ChannelFund - Event");
-        getBalance();
         onFund();
       });
-      conti.on("ChannelClose", () => {
+      conti.on("ChannelClose", (e) => {
         console.log("ChannelClose - Event");
+        if (e) {
+          setState1(7);
+        } else {
+          setState2(7);
+        }
+      });
+      conti.on("ChannelWithdraw", (e) => {
+        console.log("ChannelClose - Event");
+        if (e) {
+          setState1(7);
+        } else {
+          setState2(7);
+        }
       });
     }
   }, [contract]);
 
   const onFund = async () => {
+    console.trace();
     if ((await contract[0].channels(1))[2].funded_a) {
       setState1(4);
-    } 
+    }
     if ((await contract[0].channels(1))[2].funded_b) {
       setState2(4);
-    } 
+    }
   };
 
   const getBalance = async () => {
@@ -114,12 +126,15 @@ export default function HomePage() {
           )
         ).toString()
       );
-      console.log("Balance: " + d);
       setBalance(d);
     } catch (error) {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    getBalance();
+  }, [state1, state2]);
 
   return (
     <div>
