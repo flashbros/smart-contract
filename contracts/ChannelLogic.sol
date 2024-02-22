@@ -337,15 +337,15 @@ contract ChannelLogic {
     function flashLoan(
     FlashBorrower receiver,
     uint256 amount) external returns (bool) {
-        require(amount*10**18 <= _maxFlashLoan(), "Amount exceeds the flash loan limit, try to choose a smaller amount");
+        require(amount <= _maxFlashLoan(), "Amount exceeds the flash loan limit, try to choose a smaller amount");
 
         //initialize variables
-        uint256 old = address(this).balance;
         payedBack = false;
 
         //pay the flashloan
-        (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amount*10**18}("");
-        expected = (amount + _flashFee(amount))*10**18;
+        (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amount}("");
+        require(transferSuccess, "Transfer failed");
+        expected = (amount + _flashFee(amount));
 
         //execute onFlashLoan function on borrower side
         receiver.onFlashLoan(msg.sender, amount, _flashFee(amount));
@@ -367,7 +367,7 @@ contract ChannelLogic {
             //distribute the fees to the participants and increase version number
             console.log("sum of balances davor: ",c.control.sum_of_balances);
 
-            c.control.sum_of_balances += ((c.control.sum_of_balances*10**2) / (address(this).balance-fees*10**18) * fees / 10**2)*10**18;
+            c.control.sum_of_balances += ((c.control.sum_of_balances*10**2) / (address(this).balance-fees) * fees / 10**2);
             console.log("Sum of balances nach dem Update: ",c.control.sum_of_balances);
         }
     }
