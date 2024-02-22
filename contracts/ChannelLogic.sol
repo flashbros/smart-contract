@@ -262,6 +262,15 @@ contract ChannelLogic {
                 require(transferSuccess, "Transfer failed");
             }
         }
+
+        // Delete the channel from the activeChannels array
+        for(uint i = 0; i < activeChannels.length; i++) {
+            if(activeChannels[i] == finalState.channel_id) {
+                activeChannels[i] = activeChannels[activeChannels.length - 1];
+                activeChannels.pop();
+                break;
+            }
+        }
         emit ChannelClose();
     }
     /**
