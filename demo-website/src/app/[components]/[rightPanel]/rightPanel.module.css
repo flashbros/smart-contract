@@ -27,9 +27,23 @@
 .connectionDots {
   position: absolute;
   top: 50%;
-  left: 50%;
+  height: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+}
+
+.connectionDotsTop {
+  position: absolute;
+  top: 0;
   height: 50%;
   border-left: 4px dotted #a7a7a7;
-  transform: translate(-50%, -50%);
-  opacity: 0;
+  transform: translate(-50%, 0);
+}
+
+.connectionDotsBottom {
+  position: absolute;
+  bottom: 0;
+  height: 50%;
+  border-left: 4px dotted #a7a7a7;
+  transform: translate(-50%, 0);
 }

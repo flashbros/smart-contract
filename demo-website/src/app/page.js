@@ -8,12 +8,14 @@ import { getContract, getSigner, getProvider } from "../../../ethereum.js";
 import ChannelLogic from "../../../contracts/ChannelLogic.json";
 import ExampleBorrower from "../../../contracts/ExampleBorrower.json";
 import { ethers } from "ethers";
+import { set } from "lodash";
 
 export default function HomePage() {
   const [contract, setContract] = useState(null); // The contract object
   const [balance, setBalance] = useState(0.0);
 
-  const [currentState, setState] = useState([0, 0]);
+  const [state1, setState1] = useState(0);
+  const [state2, setState2] = useState(0);
 
   useEffect(() => {
     async function init() {
@@ -64,21 +66,24 @@ export default function HomePage() {
       getBalance();
       const conti = contract[0];
       conti.removeAllListeners();
-      const eventFilter = conti.filters.ChannelFund();
+      const fundEventFilter = conti.filters.ChannelFund();
       getProvider()
         .getLogs({
-          ...eventFilter,
+          ...fundEventFilter,
           fromBlock: 0,
           toBlock: "latest",
         })
         .then((logs) => {
           if (logs.length > 0) {
+            setState1(2);
+            setState2(2);
             onFund();
           }
         });
       conti.on("ChannelOpen", (e) => {
         console.log("ChannelOpen - Event");
-        setState([2, 2]);
+        setState1(2);
+        setState2(2);
       });
       conti.on("ChannelFund", async (e) => {
         console.log("ChannelFund - Event");
@@ -92,15 +97,12 @@ export default function HomePage() {
   }, [contract]);
 
   const onFund = async () => {
-    let arr = [
-      currentState[0] < 2 ? 2 : currentState[0],
-      currentState[1] < 2 ? 2 : currentState[1],
-    ];
-
-    if ((await contract[0].channels(1))[2].funded_a) arr[0] = 4;
-    if ((await contract[0].channels(1))[2].funded_b) arr[1] = 4;
-
-    setState(arr);
+    if ((await contract[0].channels(1))[2].funded_a) {
+      setState1(4);
+    } 
+    if ((await contract[0].channels(1))[2].funded_b) {
+      setState2(4);
+    } 
   };
 
   const getBalance = async () => {
@@ -126,8 +128,10 @@ export default function HomePage() {
       <div className={styles.dividerY} />
       <RightPanel
         contract={contract}
-        currentState={currentState}
-        setState={setState}
+        state1={state1}
+        state2={state2}
+        setState1={setState1}
+        setState2={setState2}
         balance={balance}
       />
     </div>
