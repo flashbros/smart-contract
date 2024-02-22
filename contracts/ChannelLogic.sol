@@ -253,13 +253,17 @@ contract ChannelLogic {
             if(senderIsA) {
                 require(!channel.control.withdrawed_a, "Sender has already withdrawn their balance");
                 channel.control.withdrawed_a = true;
+                channel.state.balance_A = 0;
                 (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
                 require(transferSuccess, "Transfer failed");
+                
             } else {
                 require(!channel.control.withdrawed_b, "Sender has already withdrawn their balance");
                 channel.control.withdrawed_b = true;
+                channel.state.balance_B = 0;
                 (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
                 require(transferSuccess, "Transfer failed");
+                
             }
         }
 
@@ -301,11 +305,13 @@ contract ChannelLogic {
         if(senderIsA) {
             require(!channel.control.withdrawed_a, "Sender has already withdrawn their balance");
             channel.control.withdrawed_a = true;
+            channel.state.balance_A = 0;
             (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
             require(transferSuccess, "Transfer failed");
         } else {
             require(!channel.control.withdrawed_b, "Sender has already withdrawn their balance");
             channel.control.withdrawed_b = true;
+            channel.state.balance_B = 0;
             (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
             require(transferSuccess, "Transfer failed");
         }
