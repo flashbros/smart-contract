@@ -25,7 +25,7 @@ contract ExampleBorrower is FlashBorrower {
 
         //DO ARBITRAGE TOMFOOLERY HERE
 
-        channelLogic.payBack{value: (amount + fee)*10**18}();
+        channelLogic.payBack{value: (amount + fee)}();
         console.log("ExampleBorrower paid back flash loan");
         return true;
     }
