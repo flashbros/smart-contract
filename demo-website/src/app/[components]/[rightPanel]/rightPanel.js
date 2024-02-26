@@ -42,7 +42,6 @@ export default function RightPanel({
         animate(conDots, { opacity: 1 }, { duration: 1 });
         animate(chSta, { opacity: 1 }, { duration: 0.5 });
       } else if (state1 == 8 || state2 == 8) {
-        console.log("close");
         if (state1 == 8) {
           let conDots = document.getElementsByClassName(
             style.connectionDotsTop
@@ -67,7 +66,6 @@ export default function RightPanel({
   useEffect(() => {
     async function dodo() {
       if (contract) {
-        console.log("moin servus moin: " + (await contract[0].channels(1))[2].sum_of_balances.toString())
         setChannelBalance(
           ethers.utils.formatEther(
             (await contract[0].channels(1))[2].sum_of_balances.toString()
@@ -76,7 +74,7 @@ export default function RightPanel({
       }
     }
     dodo();
-  }, [balance]);
+  }, [contract, balance]);
 
   useEffect(() => {
     console.log("Channel Balance: " + channelBalance);

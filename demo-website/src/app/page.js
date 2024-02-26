@@ -64,21 +64,47 @@ export default function HomePage() {
     if (contract) {
       const conti = contract[0];
       conti.removeAllListeners();
-      const fundEventFilter = conti.filters.ChannelFund();
-      getProvider()
-        .getLogs({
-          ...fundEventFilter,
-          fromBlock: 0,
-          toBlock: "latest",
-        })
-        .then((logs) => {
-          if (logs.length > 0 && state1 < 2 && state2 < 2) {
-            setState1(2);
-            setState2(2);
-            console.log("ChannelFund - Logdd");
-            
-          }
-        });
+      async function dodo() {
+        const fundEventFilter = conti.filters.ChannelFund();
+        await getProvider()
+          .getLogs({
+            ...fundEventFilter,
+            fromBlock: 0,
+            toBlock: "latest",
+          })
+          .then((logs) => {
+            if (logs.length > 0 && state1 < 2 && state2 < 2) {
+              setState1(2);
+              setState2(2);
+              onFund();
+              console.log("ChannelFund - Past");
+            }
+          });
+        const closeEventFilter = conti.filters.ChannelClose();
+        await getProvider()
+          .getLogs({
+            ...closeEventFilter,
+            fromBlock: 0,
+            toBlock: "latest",
+          })
+          .then(async (logs) => {
+            const dd = (await contract[0].channels(1)).control;
+
+            if (dd.closed) {
+              if (dd.withdrawed_a && !dd.withdrawed_b) {
+                setState1(8);
+                setState2(6);
+              } else if (dd.withdrawed_b && !dd.withdrawed_a) {
+                setState1(6);
+                setState2(8);
+              } else if (dd.withdrawed_a && dd.withdrawed_b) {
+                setState1(8);
+                setState2(8);
+              }
+            }
+          });
+      }
+      dodo();
       conti.on("ChannelOpen", (e) => {
         console.log("ChannelOpen - Event");
         setState1(2);
@@ -107,14 +133,16 @@ export default function HomePage() {
     }
   }, [contract]);
 
-  const onFund = async () => {
-    if ((await contract[0].channels(1))[2].funded_a) {
+  async function onFund() {
+    const dd = (await contract[0].channels(1))[2];
+    if (dd.funded_a && state1 < 2) {
       setState1(4);
     }
-    if ((await contract[0].channels(1))[2].funded_b) {
+
+    if (dd.funded_b && state2 < 2) {
       setState2(4);
     }
-  };
+  }
 
   const getBalance = async () => {
     try {

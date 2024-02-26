@@ -19,7 +19,6 @@ export default function UserPanel({
   const [userBalance, setUserBalance] = useState(0.0);
 
   useEffect(() => {
-    console.log("Own State: " + ownState)
     async function dodo() {
       if (contract) {
         let wb = ethers.utils
