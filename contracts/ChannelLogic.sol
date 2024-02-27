@@ -247,7 +247,7 @@ contract ChannelLogic {
         bool senderIsA = msg.sender == channel.params.participant_a.addresse;
         uint256 amountToTransfer = senderIsA ? channel.state.balance_A : channel.state.balance_B;
 
-        require(amountToTransfer >= channel.control.sum_of_balances, "The amount to be transferred must be less than the sum of the balances");
+        require(amountToTransfer < channel.control.sum_of_balances, "The amount to be transferred must be less than the sum of the balances");
 
         // Check if there is a balance to transfer and do the transfer
         if(amountToTransfer > 0) {

@@ -79,10 +79,11 @@ export default function ActionField({
         setError("Wrong Input! Only numbers greater 0!");
         throw new Error("Wrong Input! Only numbers greater 0!");
       }
+
       const Channel_State = {
         channel_id: 1,
         balance_A:
-          user.id === 0
+          user.id == 0
             ? ethers.utils.parseEther(closeAmount)
             : ethers.utils.parseEther(
                 (channelBalance - parseFloat(closeAmount)).toString()
@@ -96,6 +97,8 @@ export default function ActionField({
         version_num: 1,
         finalized: true,
       };
+      console.log(Channel_State.balance_A.toString());
+      console.log(Channel_State.balance_B.toString());
       contract[user.id + 1].close(Channel_State);
     } catch (error) {
       onError();
