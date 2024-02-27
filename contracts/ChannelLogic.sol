@@ -57,7 +57,7 @@ struct Channel{
 
 contract ChannelLogic {
     // Constants
-    uint256 flashLoanFee = 1000; //  1 => 0.01% fee
+    uint256 flashLoanFee = 1000; //  1 => 0.01% fee, 1000 => 10% fee
 
     // Variables
     //uint256 public contract_pool = 0 ether; //kann maybe durch address(this).balance ersetzt werden
@@ -247,6 +247,7 @@ contract ChannelLogic {
         bool senderIsA = msg.sender == channel.params.participant_a.addresse;
         uint256 amountToTransfer = senderIsA ? channel.state.balance_A : channel.state.balance_B;
 
+        require(amountToTransfer >= channel.control.sum_of_balances, "The amount to be transferred must be less than the sum of the balances");
 
         // Check if there is a balance to transfer and do the transfer
         if(amountToTransfer > 0) {

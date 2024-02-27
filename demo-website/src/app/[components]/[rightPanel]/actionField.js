@@ -44,26 +44,19 @@ export default function ActionField({
 
   const fundChan = async () => {
     try {
-      // check if fundAmount is only a number
-      console.log(parseFloat(fundAmount));
       if (parseFloat(fundAmount) >= walletBalance) {
         setError(`Wrong Input! Only numbers less ${walletBalance}!`);
         throw new Error(`Wrong Input! Only numbers less ${walletBalance}!`);
       }
       if (parseFloat(fundAmount) <= 0) {
         setError("Wrong Input! Only numbers greater 0!");
-        throw new Error("fundAmount is not a positive number");
+        throw new Error("Wrong Input! Only numbers greater 0!");
       }
       contract[user.id + 1].fund(1, {
         value: ethers.utils.parseEther(fundAmount),
       });
     } catch (error) {
-      const errorMsg = document.getElementById("errorMsg" + user.id);
-      animate(errorMsg, { opacity: 1, display: "flex" }, { duration: 1 });
-      setTimeout(async () => {
-        await animate(errorMsg, { opacity: 0 }, { duration: 1 });
-        animate(errorMsg, { display: "none" }, { duration: 0 });
-      }, 3000);
+      onError();
       console.log(error);
     }
   };
@@ -78,19 +71,45 @@ export default function ActionField({
 
   const closeChan = async () => {
     try {
+      if (parseFloat(closeAmount) >= channelBalance) {
+        setError(`Wrong Input! Only numbers less ${channelBalance}!`);
+        throw new Error(`Wrong Input! Only numbers less ${channelBalance}!`);
+      }
+      if (parseFloat(closeAmount) <= 0) {
+        setError("Wrong Input! Only numbers greater 0!");
+        throw new Error("Wrong Input! Only numbers greater 0!");
+      }
       const Channel_State = {
         channel_id: 1,
-        balance_A: ethers.utils.parseEther(closeAmount),
-        balance_B: ethers.utils.parseEther(
-          (channelBalance - parseFloat(closeAmount)).toString()
-        ),
+        balance_A:
+          user.id === 0
+            ? ethers.utils.parseEther(closeAmount)
+            : ethers.utils.parseEther(
+                (channelBalance - parseFloat(closeAmount)).toString()
+              ),
+        balance_B:
+          user.id == 1
+            ? ethers.utils.parseEther(closeAmount)
+            : ethers.utils.parseEther(
+                (channelBalance - parseFloat(closeAmount)).toString()
+              ),
         version_num: 1,
         finalized: true,
       };
       contract[user.id + 1].close(Channel_State);
     } catch (error) {
+      onError();
       console.log(error);
     }
+  };
+
+  const onError = () => {
+    const errorMsg = document.getElementById("errorMsg" + user.id);
+    animate(errorMsg, { opacity: 1, display: "flex" }, { duration: 1 });
+    setTimeout(async () => {
+      await animate(errorMsg, { opacity: 0 }, { duration: 1 });
+      animate(errorMsg, { display: "none" }, { duration: 0 });
+    }, 3000);
   };
 
   switch (state) {
@@ -150,7 +169,7 @@ export default function ActionField({
         </>
       );
     case 6:
-      return <>nur noch withdraw!</>;
+      return <>Press a function!</>;
     case 7:
       return (
         <>
