@@ -86,14 +86,16 @@ export default function ActionField({
           user.id == 0
             ? ethers.utils.parseEther(closeAmount)
             : ethers.utils.parseEther(
-                (channelBalance - parseFloat(closeAmount)).toString()
+                (channelBalance - parseFloat(closeAmount)).toFixed(8)
               ),
+
         balance_B:
           user.id == 1
             ? ethers.utils.parseEther(closeAmount)
             : ethers.utils.parseEther(
-                (channelBalance - parseFloat(closeAmount)).toString()
+                (channelBalance - parseFloat(closeAmount)).toFixed(8)
               ),
+
         version_num: 1,
         finalized: true,
       };
