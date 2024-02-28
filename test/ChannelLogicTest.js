@@ -1,5 +1,4 @@
 const { expect } = require("chai");
-const { cons } = require("fp-ts/lib/NonEmptyArray2v");
 const { ethers } = require("hardhat");
 
 describe("FlashLoan - open method", function () {
