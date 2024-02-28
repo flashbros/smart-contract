@@ -13,7 +13,7 @@ export default function UserPanel({
   otherState,
   setState,
   setOtherState,
-  channelBalance
+  channelBalance,
 }) {
   const [walletBalance, setWalletBalance] = useState(0.0);
   const [userBalance, setUserBalance] = useState(0.0);
@@ -40,7 +40,7 @@ export default function UserPanel({
     <div className={style.userContainer}>
       <div className={style.topWrapper}>
         <div className={style.left}>
-          <div>{user.name} {ownState}</div>
+          <div>{user.name}</div>
           <div>Wallet: {walletBalance} ETH</div>
         </div>
         <div className={style.right}>

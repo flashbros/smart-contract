@@ -97,8 +97,6 @@ export default function ActionField({
         version_num: 1,
         finalized: true,
       };
-      console.log(Channel_State.balance_A.toString());
-      console.log(Channel_State.balance_B.toString());
       contract[user.id + 1].close(Channel_State);
     } catch (error) {
       onError();
