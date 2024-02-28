@@ -1,4 +1,5 @@
 const { expect } = require("chai");
+const { cons } = require("fp-ts/lib/NonEmptyArray2v");
 const { ethers } = require("hardhat");
 
 describe("FlashLoan - open method", function () {
@@ -137,11 +138,13 @@ describe("FlashLoan - close method", function () {
     const fundTx = await flashLoan.connect(participantA).fund(channel_id, { value: fundAmount });
     const receipt = await fundTx.wait();
     
+    const dd = (await flashLoan.channels(channel_id));
+
     // Close the channel
     const closeTx = await flashLoan.connect(participantA).close({
       channel_id: channel_id,
-      balance_A: 1,
-      balance_B: 0,
+      balance_A: ethers.utils.parseEther("0.5"),
+      balance_B: ethers.utils.parseEther("0.5"),
       version_num: 0,
       finalized: true,
     });
