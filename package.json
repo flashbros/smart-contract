@@ -16,7 +16,8 @@
     "@nomicfoundation/hardhat-network-helpers": "^1.0.10",
     "@nomiclabs/hardhat-ethers": "^2.2.3",
     "ethers": "^5.7.2",
-    "hardhat": "^2.19.4"
+    "hardhat": "^2.19.4",
+    "hardhat-gas-reporter": "^1.0.10"
   },
   "directories": {
     "test": "test"
@@ -166,7 +167,6 @@
     "gopd": "^1.0.1",
     "graceful-fs": "^4.2.11",
     "handlebars": "^4.7.8",
-    "hardhat-gas-reporter": "^1.0.9",
     "has-flag": "^3.0.0",
     "has-property-descriptors": "^1.0.1",
     "has-proto": "^1.0.1",

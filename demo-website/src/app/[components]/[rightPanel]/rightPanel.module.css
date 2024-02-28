@@ -5,7 +5,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-evenly;
+  justify-content: center;
+  gap: 5%;
 }
 
 .channelStatus {
@@ -13,27 +14,36 @@
   background-color: #f5f5f5;
   border-radius: 10px;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
-  transition: 0.3s;
   padding: 6px;
   display: inline-block;
   opacity: 0;
 }
 
+.channelTitle {
+  text-decoration: underline 2px;
+  margin-bottom: 4px;
+}
+
 .connectionDots {
   position: absolute;
   top: 50%;
-  left: 50%;
   height: 50%;
-  border-left: 4px dotted #a7a7a7;
-  transform: translate(-50%, -50%);
+  transform: translateY(-50%);
   opacity: 0;
 }
 
-.fadeIn {
-  animation: fadeIn 0.5s ease-in-out forwards;
+.connectionDotsTop {
+  position: absolute;
+  top: 0;
+  height: 50%;
+  border-left: 4px dotted #a7a7a7;
+  transform: translate(-50%, 0);
 }
 
-@keyframes fadeIn {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+.connectionDotsBottom {
+  position: absolute;
+  bottom: 0;
+  height: 50%;
+  border-left: 4px dotted #a7a7a7;
+  transform: translate(-50%, 0);
 }

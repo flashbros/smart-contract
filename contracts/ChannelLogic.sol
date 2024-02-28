@@ -23,7 +23,7 @@ struct Participant {
 
 // Define Channel State
 struct Channel_State {
-    int channel_id;
+    uint channel_id;
     uint balance_A;
     uint balance_B;
     int version_num;
@@ -57,7 +57,7 @@ struct Channel{
 
 contract ChannelLogic {
     // Constants
-    uint256 flashLoanFee = 1; //  1 => 0.01% fee
+    uint256 flashLoanFee = 1000; //  1 => 0.01% fee, 1000 => 10% fee
 
     // Variables
     //uint256 public contract_pool = 0 ether; //kann maybe durch address(this).balance ersetzt werden
@@ -69,14 +69,14 @@ contract ChannelLogic {
 
     //Events
     event ChannelOpen();
-
-    event ChannelFund();
-    event ChannelWithdraw();
-    event ChannelClose();
+    event ChannelFund(bool senderIsA, uint256 amount);
+    event ChannelWithdraw(bool senderIsA);
+    event ChannelClose(bool senderIsA);
+    event loanHappend();
     event ContractBalanceUpdated(uint256 newBalance);
    
     // Mapping: Channel_ID => Channel
-    mapping(int => Channel) public channels;
+    mapping(uint => Channel) public channels;
 
     /*
     // Mapping: User_Address => Balance, keeps track which address has funded which amount
@@ -90,7 +90,7 @@ contract ChannelLogic {
     */
 
     // Dynamic Array: Keeps track which channels are currently active
-    int[] activeChannels;
+    uint[] activeChannels;
 
     // Compare two Participants
     function compareParticipants(Participant memory a, Participant memory b) private pure returns (bool) {
@@ -153,7 +153,7 @@ contract ChannelLogic {
      * @param channel_id The id of the channel
      * @dev Oli Moritz Louis
      */
-    function fund (int channel_id) public payable {
+    function fund (uint channel_id) public payable {
         Channel storage channel = channels[channel_id];
 
         // Check if channel exists
@@ -186,7 +186,7 @@ contract ChannelLogic {
 
             // Log for tests, delete later
             console.log("Participant A has successfully funded the channel with ", channel.state.balance_A);
-                    emit ChannelFund();
+                    emit ChannelFund(senderIsA, amount);
 
         } else {
             channel.state.balance_B = amount;
@@ -194,9 +194,11 @@ contract ChannelLogic {
 
             // Log for tests, delete later
             console.log("Participant B has successfully funded the channel with ", channel.state.balance_B);
-                    emit ChannelFund();
+                    emit ChannelFund(senderIsA, amount);
 
         }
+
+        channel.control.sum_of_balances += amount;
 
         /*
         balances[msg.sender] += amount;
@@ -218,7 +220,7 @@ contract ChannelLogic {
     * @dev Moritz
     */
    function close(Channel_State calldata finalState) public {
-        Channel memory channel = channels[finalState.channel_id];
+        Channel storage channel = channels[finalState.channel_id];
         // Check if channel exists
         require(channel.state.channel_id == finalState.channel_id, "Channel does not exist");
 
@@ -245,29 +247,45 @@ contract ChannelLogic {
         bool senderIsA = msg.sender == channel.params.participant_a.addresse;
         uint256 amountToTransfer = senderIsA ? channel.state.balance_A : channel.state.balance_B;
 
+        require(amountToTransfer < channel.control.sum_of_balances, "The amount to be transferred must be less than the sum of the balances");
 
         // Check if there is a balance to transfer and do the transfer
         if(amountToTransfer > 0) {
             if(senderIsA) {
                 require(!channel.control.withdrawed_a, "Sender has already withdrawn their balance");
                 channel.control.withdrawed_a = true;
+                channel.state.balance_A = 0;
+                channel.control.sum_of_balances -= amountToTransfer;
                 (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
-                require(transferSuccess, "Transfer failed");
+                require(transferSuccess, "Transfer failed");    
             } else {
                 require(!channel.control.withdrawed_b, "Sender has already withdrawn their balance");
                 channel.control.withdrawed_b = true;
+                channel.state.balance_B = 0;
+                channel.control.sum_of_balances -= amountToTransfer;
                 (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
                 require(transferSuccess, "Transfer failed");
+                
             }
         }
-        emit ChannelClose();
+
+        // Delete the channel from the activeChannels array
+        for(uint i = 0; i < activeChannels.length; i++) {
+            if(activeChannels[i] == finalState.channel_id) {
+                activeChannels[i] = activeChannels[activeChannels.length - 1];
+                activeChannels.pop();
+                break;
+            }
+        }
+        emit ChannelClose(senderIsA);
     }
+
     /**
     * Withdraws the balance of the caller if the channel has already been closed
     * @param channel_id The id of the channel
     * @dev Moritz
      */
-    function withdraw(int channel_id) public {
+    function withdraw(uint channel_id) public {
         Channel storage channel = channels[channel_id];
         // Check if channel exists
         require(channel.state.channel_id == channel_id, "Channel does not exist");
@@ -290,15 +308,17 @@ contract ChannelLogic {
         if(senderIsA) {
             require(!channel.control.withdrawed_a, "Sender has already withdrawn their balance");
             channel.control.withdrawed_a = true;
+            channel.state.balance_A = 0;
             (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
             require(transferSuccess, "Transfer failed");
         } else {
             require(!channel.control.withdrawed_b, "Sender has already withdrawn their balance");
             channel.control.withdrawed_b = true;
+            channel.state.balance_B = 0;
             (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
             require(transferSuccess, "Transfer failed");
         }
-        emit ChannelWithdraw();
+        emit ChannelWithdraw(senderIsA);
     }
 
     
@@ -335,16 +355,16 @@ contract ChannelLogic {
     function flashLoan(
     FlashBorrower receiver,
     uint256 amount) external returns (bool) {
-
+        require(amount > 0, "Amount has to be greater than 0");
         require(amount <= _maxFlashLoan(), "Amount exceeds the flash loan limit, try to choose a smaller amount");
 
         //initialize variables
-        uint256 old = address(this).balance;
         payedBack = false;
 
         //pay the flashloan
         (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amount}("");
-        expected = amount + _flashFee(amount);
+        require(transferSuccess, "Transfer failed");
+        expected = (amount + _flashFee(amount));
 
         //execute onFlashLoan function on borrower side
         receiver.onFlashLoan(msg.sender, amount, _flashFee(amount));
@@ -352,19 +372,22 @@ contract ChannelLogic {
         require(payedBack, "Payback did not happen or failed");
 
         channelDistributor(_flashFee(amount));
-
+        emit loanHappend();
         return true;
     }
 
     function channelDistributor(
         uint256 fees
     ) internal  {
+        console.log("Reached channelDistributor");
         for(uint256 i = 0; i < activeChannels.length; i++) {
             //get the channel via the mapping and the array
-            Channel memory c = channels[activeChannels[i]];
-
+            Channel storage c = channels[activeChannels[i]];
             //distribute the fees to the participants and increase version number
-            c.control.sum_of_balances += c.control.sum_of_balances / address(this).balance * fees;
+            console.log("sum of balances davor: ",c.control.sum_of_balances);
+
+            c.control.sum_of_balances += ((c.control.sum_of_balances*10**2) / (address(this).balance-fees) * fees / 10**2);
+            console.log("Sum of balances nach dem Update: ",c.control.sum_of_balances);
         }
     }
 
