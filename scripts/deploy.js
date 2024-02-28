@@ -9,7 +9,10 @@ const hre = require("hardhat");
 async function main() {
   const ChannelLogic = await ethers.getContractFactory("ChannelLogic");
   const cl = await ChannelLogic.deploy();
-  console.log("Contract deployed to:", cl.address);
+  console.log("ChannelLogic deployed to:", cl.address);
+  const ExampleBorrower = await ethers.getContractFactory("ExampleBorrower");
+  const eb = await ExampleBorrower.deploy();
+  console.log("ExampleBorrower deployed to:", eb.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

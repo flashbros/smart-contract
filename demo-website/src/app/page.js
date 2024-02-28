@@ -6,70 +6,143 @@ import Header from "./[components]/[header]/header";
 import { useState, useEffect } from "react";
 import { getContract, getSigner, getProvider } from "../../../ethereum.js";
 import ChannelLogic from "../../../contracts/ChannelLogic.json";
+import ExampleBorrower from "../../../contracts/ExampleBorrower.json";
 import { ethers } from "ethers";
 
 export default function HomePage() {
   const [contract, setContract] = useState(null); // The contract object
-  const [channelCount, setChannelCount] = useState(0);
   const [balance, setBalance] = useState(0.0);
 
-  const [currentState, setState] = useState([0, 0]);
+  const [state1, setState1] = useState(0);
+  const [state2, setState2] = useState(0);
 
   useEffect(() => {
     async function init() {
-      const conti = await getContract(
+      const contractChannelLogic = await getContract(
         "0x5fbdb2315678afecb367f032d93f642f64180aa3",
         ChannelLogic.abi,
         0 // Use the first account as the signer
       );
-      const user1Contract = conti.connect(await getSigner(1));
-      const user2Contract = conti.connect(await getSigner(2));
-      setContract([conti, user1Contract, user2Contract]);
+      const contractExampleBorrower = await getContract(
+        "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+        ExampleBorrower.abi,
+        3 // Use the fourth account as the signer
+      );
+      const contractUser1 = contractChannelLogic.connect(await getSigner(1));
+      const contractUser2 = contractChannelLogic.connect(await getSigner(2));
+
+      let d = ethers.utils.formatEther(
+        (
+          await getProvider().getBalance(
+            "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+          )
+        ).toString()
+      );
+      if (d < 1000) {
+        await contractExampleBorrower.receiver({
+          value: ethers.utils.parseEther("1000"),
+        });
+      }
+      d = ethers.utils.formatEther(
+        (
+          await getProvider().getBalance(
+            "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+          )
+        ).toString()
+      );
+      setContract([
+        contractChannelLogic,
+        contractUser1,
+        contractUser2,
+        contractExampleBorrower,
+      ]);
     }
     init();
   }, []);
 
   useEffect(() => {
     if (contract) {
-      getCount();
-      getBalance();
       const conti = contract[0];
       conti.removeAllListeners();
+      async function dodo() {
+        const fundEventFilter = conti.filters.ChannelFund();
+        await getProvider()
+          .getLogs({
+            ...fundEventFilter,
+            fromBlock: 0,
+            toBlock: "latest",
+          })
+          .then((logs) => {
+            if (logs.length > 0 && state1 < 2 && state2 < 2) {
+              setState1(2);
+              setState2(2);
+              onFund();
+              console.log("ChannelFund - Past");
+            }
+          });
+        const closeEventFilter = conti.filters.ChannelClose();
+        await getProvider()
+          .getLogs({
+            ...closeEventFilter,
+            fromBlock: 0,
+            toBlock: "latest",
+          })
+          .then(async (logs) => {
+            const dd = (await contract[0].channels(1)).control;
+
+            if (dd.closed) {
+              if (dd.withdrawed_a && !dd.withdrawed_b) {
+                setState1(8);
+                setState2(6);
+              } else if (dd.withdrawed_b && !dd.withdrawed_a) {
+                setState1(6);
+                setState2(8);
+              } else if (dd.withdrawed_a && dd.withdrawed_b) {
+                setState1(8);
+                setState2(8);
+              }
+            }
+          });
+      }
+      dodo();
       conti.on("ChannelOpen", (e) => {
         console.log("ChannelOpen - Event");
-        getCount();
-        setState([2, 2]);
+        setState1(2);
+        setState2(2);
       });
       conti.on("ChannelFund", async (e) => {
         console.log("ChannelFund - Event");
-        getBalance();
-        console.log(currentState);
-        let arr = [
-          currentState[0] < 2 ? 2 : currentState[0],
-          currentState[1] < 2 ? 2 : currentState[1]
-        ];
-        console.log(arr);
-        if ((await contract[0].channels(1))[2].funded_a) arr[0] = 4;
-        if ((await contract[0].channels(1))[2].funded_b) arr[1] = 4;
-        console.log(arr);
-        setState(arr);
+        onFund();
       });
-      conti.on("ChannelClose", () => {
+      conti.on("ChannelClose", (e) => {
         console.log("ChannelClose - Event");
+        if (e) {
+          setState1(8);
+        } else {
+          setState2(8);
+        }
+      });
+      conti.on("ChannelWithdraw", (e) => {
+        console.log("ChannelClose - Event");
+        if (e) {
+          setState1(8);
+        } else {
+          setState2(8);
+        }
       });
     }
   }, [contract]);
 
-  const getCount = async () => {
-    try {
-      console.log("getCount");
-      const ch = await contract[0].channel_count();
-      console.log(ch.toNumber());
-      setChannelCount(ch.toNumber());
-    } catch (error) {
-      console.log(error);
+  async function onFund() {
+    const dd = (await contract[0].channels(1))[2];
+    if (dd.funded_a && state1 < 2) {
+      setState1(4);
     }
-  };
+
+    if (dd.funded_b && state2 < 2) {
+      setState2(4);
+    }
+  }
 
   const getBalance = async () => {
     try {
@@ -80,22 +153,28 @@ export default function HomePage() {
           )
         ).toString()
       );
-      console.log(d);
       setBalance(d);
     } catch (error) {
       console.log(error);
     }
   };
 
+  useEffect(() => {
+    getBalance();
+  }, [state1, state2]);
+
   return (
     <div>
       <Header balance={balance} />
-      <LeftPanel />
+      <LeftPanel contract={contract} getBalance={getBalance} />
       <div className={styles.dividerY} />
       <RightPanel
         contract={contract}
-        currentState={currentState}
-        setState={setState}
+        state1={state1}
+        state2={state2}
+        setState1={setState1}
+        setState2={setState2}
+        balance={balance}
       />
     </div>
   );

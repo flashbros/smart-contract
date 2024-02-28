@@ -3,99 +3,115 @@ import UserPanel from "./userPanel";
 import style from "./rightPanel.module.css";
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
+import { animate } from "framer-motion";
 
-
-export default function RightPanel({ contract, currentState, setState }) {
+export default function RightPanel({
+  contract,
+  state1,
+  state2,
+  setState1,
+  setState2,
+  balance,
+}) {
   let user1 = { name: "Alice", id: 0 };
   let user2 = { name: "Bob", id: 1 };
+  let channel = { id: "1" };
 
   const [d1, setD1] = useState(false);
+  const [channelBalance, setChannelBalance] = useState(0);
 
   let users = [
     {
       id: 0,
       name: "Alice",
-      addresse: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      address: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
     },
     {
       id: 1,
       name: "Bob",
-      addresse: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+      address: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
     },
   ];
 
   useEffect(() => {
     async function dodo() {
-      if (currentState[0] >= 2 && currentState[1] >= 2 && !d1) {
-        let dots = document.getElementById("dots");
-        dots.classList.add(style.fadeIn);
-        let chSta = document.getElementById("channelStatus");
-        chSta.classList.add(style.fadeIn);
+      if (state1 >= 2 && state2 >= 2 && !d1) {
         setD1(true);
-      } else if (currentState[0] >= 2 || currentState[1] >= 2) {
-        console.log("works!");
-        let chSta = document.getElementById("channelStatus");
-        chSta.innerHTML =
-          "Channel Funds: " +
-          (parseFloat(
-            ethers.utils.formatEther(
-              (await contract[0].channels(1))[0].balance_A.toString()
-            )
-          ) +
-            parseFloat(
-              ethers.utils.formatEther(
-                (await contract[0].channels(1))[0].balance_B.toString()
-              )
-            )) +
-          " Eth";
+        let chSta = document.getElementsByClassName(style.channelStatus)[0];
+        let conDots = document.getElementsByClassName(style.connectionDots)[0];
+        animate(conDots, { opacity: 1 }, { duration: 1 });
+        animate(chSta, { opacity: 1 }, { duration: 0.5 });
+      } else if (state1 == 8 || state2 == 8) {
+        if (state1 == 8) {
+          let conDots = document.getElementsByClassName(
+            style.connectionDotsTop
+          )[0];
+          animate(conDots, { opacity: 0 }, { duration: 0.5 });
+        }
+        if (state2 == 8) {
+          let conDots = document.getElementsByClassName(
+            style.connectionDotsBottom
+          )[0];
+          animate(conDots, { opacity: 0 }, { duration: 0.5 });
+        }
+        if (state1 == 8 && state2 == 8) {
+          let chSta = document.getElementsByClassName(style.channelStatus)[0];
+          animate(chSta, { opacity: 0 }, { duration: 0.5 });
+        }
       }
     }
     dodo();
-  }, [currentState]);
+  }, [state1, state2]);
 
   useEffect(() => {
     async function dodo() {
       if (contract) {
-        let chSta = document.getElementById("channelStatus");
-        chSta.innerHTML =
-          "Channel Funds: " +
-          (parseFloat(
-            ethers.utils.formatEther(
-              (await contract[0].channels(1))[0].balance_A.toString()
-            )
-          ) +
-            parseFloat(
-              ethers.utils.formatEther(
-                (await contract[0].channels(1))[0].balance_B.toString()
-              )
-            )) +
-          " Eth";
+        setChannelBalance(
+          ethers.utils.formatEther(
+            (await contract[0].channels(1))[2].sum_of_balances.toString()
+          )
+        );
       }
     }
     dodo();
-  }, [contract]);
+  }, [contract, balance]);
+
+  useEffect(() => {
+    console.log("Channel Balance: " + channelBalance);
+  }, [channelBalance]);
 
   return (
     <div className={strucStyle.RightPanel}>
       <div className={strucStyle.RelativeWrapper}>
         <div className={style.flexContainer}>
-          <div id="dots" className={style.connectionDots} />
+          <div className={style.connectionDots}>
+            <div className={style.connectionDotsTop} />
+            <div className={style.connectionDotsBottom} />
+          </div>
           <UserPanel
             user={user1}
             users={users}
             contract={contract}
-            currentState={currentState}
-            setState={setState}
+            ownState={state1}
+            otherState={state2}
+            setState={setState1}
+            setOtherState={setState2}
+            channelBalance={channelBalance}
           />
-          <div id="channelStatus" className={style.channelStatus}>
-            ff
+          <div className={style.channelStatus}>
+            <div className={style.channelTitle}>Channel</div>
+            <div>ID: {channel.id}</div>
+            <div>Balance: {channelBalance} ETH</div>
           </div>
           <UserPanel
             user={user2}
             users={users}
             contract={contract}
-            currentState={currentState}
-            setState={setState}
+            ownState={state2}
+            otherState={state1}
+            setState={setState2}
+            setOtherState={setState1}
+            channelBalance={channelBalance}
           />
         </div>
       </div>

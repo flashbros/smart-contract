@@ -9,13 +9,15 @@ export default function UserPanel({
   user = { name: "user", id: 0 },
   users = [{ name: "user", id: 0 }],
   contract,
-  currentState,
+  ownState,
+  otherState,
   setState,
+  setOtherState,
+  channelBalance,
 }) {
-  let channelID = 1;
   const [walletBalance, setWalletBalance] = useState(0.0);
   const [userBalance, setUserBalance] = useState(0.0);
-   
+
   useEffect(() => {
     async function dodo() {
       if (contract) {
@@ -32,33 +34,35 @@ export default function UserPanel({
       }
     }
     dodo();
-  }, [contract, currentState]);
+  }, [contract, ownState, channelBalance]);
 
   return (
     <div className={style.userContainer}>
       <div className={style.topWrapper}>
         <div className={style.left}>
-          <div className={style.title}>{user.name}</div>
+          <div>{user.name}</div>
           <div>Wallet: {walletBalance} ETH</div>
-          <div className={style.ch}>ChannelID: {channelID}</div>
         </div>
         <div className={style.right}>
-          <div className={style.budget}>{userBalance} ETH - User Balance</div>
+          <div>{userBalance} ETH - User Balance</div>
         </div>
       </div>
       <div className={style.actionField}>
         <ActionField
-          currentState={currentState}
-          setState={setState}
+          state={ownState}
           user={user}
           users={users}
           contract={contract}
+          walletBalance={walletBalance}
+          channelBalance={channelBalance}
         />
       </div>
       <ButtonLayout
         user={user}
-        currentState={currentState}
+        state={ownState}
         setState={setState}
+        otherState={otherState}
+        setOtherState={setOtherState}
       />
     </div>
   );
