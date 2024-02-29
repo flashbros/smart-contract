@@ -9,7 +9,6 @@ contract ExampleBorrower is FlashBorrower {
     ChannelLogic public channelLogic = ChannelLogic(payable(0x5FbDB2315678afecb367f032d93F642f64180aa3));
 
     function startFlashLoan(uint256 amount) external {
-        console.log("ExampleBorrower starting flash loan");
         bool d = channelLogic.flashLoan(this, amount);
         console.log("Flash loan result: %s", d);
     }
