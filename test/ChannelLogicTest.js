@@ -46,11 +46,12 @@ describe("FlashLoan - open method", function () {
     expect(newChannel.control.funded_b).to.equal(false);
 
     // Check if the contract balance remains 0
-    const contractBalanceBefore = await ethers.provider.getBalance(flashLoan.address);
+    const contractBalanceBefore = await ethers.provider.getBalance(
+      flashLoan.address
+    );
     expect(contractBalanceBefore.toNumber()).to.equal(0);
   });
 });
-
 
 describe("FlashLoan - fund method", function () {
   it("should fund a channel and update balances and control flags", async function () {
@@ -80,27 +81,37 @@ describe("FlashLoan - fund method", function () {
 
     // Fund the channel
     const fundAmount = ethers.utils.parseEther("1"); // 1 Ether
-    const fundTx = await flashLoan.connect(participantA).fund(channel_id, { value: fundAmount });
+    const fundTx = await flashLoan
+      .connect(participantA)
+      .fund(channel_id, { value: fundAmount });
     const receipt = await fundTx.wait();
 
     // Check the emitted events
-    const contractBalanceUpdatedEvent = receipt.events ? receipt.events.find((event) => event.event === 'ContractBalanceUpdated') : undefined;
-    console.log('Contract Balance Updated Event:', contractBalanceUpdatedEvent ? contractBalanceUpdatedEvent.args : 'Event not found');
-
+    const contractBalanceUpdatedEvent = receipt.events
+      ? receipt.events.find((event) => event.event === "ContractBalanceUpdated")
+      : undefined;
+    console.log(
+      "Contract Balance Updated Event:",
+      contractBalanceUpdatedEvent
+        ? contractBalanceUpdatedEvent.args
+        : "Event not found"
+    );
 
     // Check if the channel is updated
     const fundedChannel = await flashLoan.channels(channel_id);
-    expect(fundedChannel.state.balance_A.toString()).to.equal(fundAmount.toString());
+    expect(fundedChannel.state.balance_A.toString()).to.equal(
+      fundAmount.toString()
+    );
     expect(fundedChannel.control.funded_a).to.equal(true);
 
     // Check if the contract balance is updated
-    const contractBalanceBefore = await ethers.provider.getBalance(flashLoan.address);
+    const contractBalanceBefore = await ethers.provider.getBalance(
+      flashLoan.address
+    );
     //const contractBalance = await flashLoan.Contract_Balance();
     expect(contractBalanceBefore.toString()).to.equal(fundAmount.toString());
-
   });
 });
-
 
 describe("FlashLoan - close method", function () {
   it("should close a channel and transfer balances accordingly", async function () {
@@ -134,10 +145,10 @@ describe("FlashLoan - close method", function () {
 
     //fund channel
     const fundAmount = ethers.utils.parseEther("1"); // 1 Ether
-    const fundTx = await flashLoan.connect(participantA).fund(channel_id, { value: fundAmount });
+    const fundTx = await flashLoan
+      .connect(participantA)
+      .fund(channel_id, { value: fundAmount });
     const receipt = await fundTx.wait();
-    
-    const dd = (await flashLoan.channels(channel_id));
 
     // Close the channel
     const closeTx = await flashLoan.connect(participantA).close({
@@ -152,7 +163,7 @@ describe("FlashLoan - close method", function () {
     // Check if the channel is closed
     const closedChannel = await flashLoan.channels(channel_id);
     expect(closedChannel.control.closed).to.equal(true);
-
+    expect(closedChannel.control.withdrawed_a).to.equal(true);
   });
 });
 
@@ -182,23 +193,36 @@ describe("FlashLoan - withdraw method", function () {
     };
     await flashLoan.connect(owner).open(openParams, openState);
 
+    //Fund the channel
+    const fundAmount = ethers.utils.parseEther("1"); // 1 Ether
+    const fundTx = await flashLoan
+      .connect(participantA)
+      .fund(channel_id, { value: fundAmount });
+    const receipt = await fundTx.wait();
+
     // Close the channel
-    await flashLoan.connect(participantA).close(openState);
+    const finalBalance = ethers.utils.parseEther("0.5");
+    const closeTx = await flashLoan.connect(participantA).close({
+      channel_id: channel_id,
+      balance_A: finalBalance,
+      balance_B: finalBalance,
+      version_num: 0,
+      finalized: true,
+    });
+    await closeTx.wait();
 
-    // Get initial balance of participant A
-    const initialBalanceA = await ethers.provider.getBalance(participantA.address);
-
-    // Withdraw balance from the closed channel
-    const withdrawTx = await flashLoan.connect(participantA).withdraw(channel_id);
+    // Withdraw the balance
+    const withdrawTx = await flashLoan
+      .connect(participantB)
+      .withdraw(channel_id);
     await withdrawTx.wait();
 
-    // Get final balance of participant A
-    const finalBalanceA = await ethers.provider.getBalance(participantA.address);
-
-    // Calculate expected final balance of participant A
-    const expectedFinalBalanceA = initialBalanceA.add(ethers.utils.parseEther("1")); // Participant A receives their balance back
-
-    // Check if the balance is transferred correctly
-    expect(finalBalanceA.toString()).to.equal(expectedFinalBalanceA.toString());
+    // Check if the participant's balance is updated
+    const closedChannel = await flashLoan.channels(channel_id);
+    expect(closedChannel.control.closed).to.equal(true);
+    expect(closedChannel.control.withdrawed_a).to.equal(true);
+    expect(closedChannel.control.withdrawed_b).to.equal(true);
+    expect(closedChannel.state.balance_A.toString()).to.equal("0");
+    expect(closedChannel.state.balance_B.toString()).to.equal("0");
   });
 });
