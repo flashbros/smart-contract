@@ -8,7 +8,7 @@ import "./CryptoMarket.sol";
 contract ExampleBorrower is FlashBorrower {
 
     ChannelLogic public channelLogic = ChannelLogic(payable(0x5FbDB2315678afecb367f032d93F642f64180aa3));
-    CryptoMarket public cryptoMarket; // = CryptoMarket(payable());
+    CryptoMarket public cryptoMarket = CryptoMarket(payable(0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0));
 
     function startFlashLoan(uint256 amount) external {
         console.log("ExampleBorrower starting flash loan");

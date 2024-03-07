@@ -28,6 +28,7 @@ export default function HomePage() {
         ExampleBorrower.abi,
         3 // Use the fourth account as the signer
       );
+      
       const contractUser1 = contractChannelLogic.connect(await getSigner(1));
       const contractUser2 = contractChannelLogic.connect(await getSigner(2));
 
