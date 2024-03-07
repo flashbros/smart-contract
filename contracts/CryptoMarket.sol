@@ -11,5 +11,17 @@ contract CryptoMarket {
         require(transferSuccess, "Transfer failed");    
     }
 
+    function receiver() external payable {
+        console.log("Receiver %s", msg.value);
+    }
+
+    receive() external payable {
+        console.log("ExampleBorrower Received %s", msg.value);
+    }
+
+    fallback() external payable {
+        console.log("ExampleBorrower Fallback, Received %s", msg.value);
+    }
+
 }
 
