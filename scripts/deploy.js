@@ -13,6 +13,9 @@ async function main() {
   const ExampleBorrower = await ethers.getContractFactory("ExampleBorrower");
   const eb = await ExampleBorrower.deploy();
   console.log("ExampleBorrower deployed to:", eb.address);
+  const CryptoMarket = await ethers.getContractFactory("CryptoMarket");
+  const cm = await CryptoMarket.deploy();
+  console.log("CryptoMarket deployed to:", cm.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
