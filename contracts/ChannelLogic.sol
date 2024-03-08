@@ -257,7 +257,7 @@ contract ChannelLogic {
                 channel.state.balance_A = 0;
                 channel.control.sum_of_balances -= amountToTransfer;
                 (bool transferSuccess, bytes memory data) = payable(msg.sender).call{value: amountToTransfer}("");
-                require(transferSuccess, "Transfer failed");    
+                require(transferSuccess, "Transfer failed");
             } else {
                 require(!channel.control.withdrawed_b, "Sender has already withdrawn their balance");
                 channel.control.withdrawed_b = true;
@@ -379,15 +379,11 @@ contract ChannelLogic {
     function channelDistributor(
         uint256 fees
     ) internal  {
-        console.log("Reached channelDistributor");
         for(uint256 i = 0; i < activeChannels.length; i++) {
             //get the channel via the mapping and the array
             Channel storage c = channels[activeChannels[i]];
             //distribute the fees to the participants and increase version number
-            console.log("sum of balances davor: ",c.control.sum_of_balances);
-
             c.control.sum_of_balances += ((c.control.sum_of_balances*10**2) / (address(this).balance-fees) * fees / 10**2);
-            console.log("Sum of balances nach dem Update: ",c.control.sum_of_balances);
         }
     }
 

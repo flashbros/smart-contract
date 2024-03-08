@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { getContract, getSigner, getProvider } from "../../../ethereum.js";
 import ChannelLogic from "../../../contracts/ChannelLogic.json";
 import ExampleBorrower from "../../../contracts/ExampleBorrower.json";
+import CryptoMarket from "../../../contracts/CryptoMarket.json";
 import { ethers } from "ethers";
 
 export default function HomePage() {
@@ -28,6 +29,12 @@ export default function HomePage() {
         ExampleBorrower.abi,
         3 // Use the fourth account as the signer
       );
+      const contractCryptoMarket = await getContract(
+        "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+        CryptoMarket.abi,
+        4 // Use the fifth account as the signer
+      );
+      
       const contractUser1 = contractChannelLogic.connect(await getSigner(1));
       const contractUser2 = contractChannelLogic.connect(await getSigner(2));
 
@@ -35,6 +42,13 @@ export default function HomePage() {
         (
           await getProvider().getBalance(
             "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+          )
+        ).toString()
+      );
+      let e = ethers.utils.formatEther(
+        (
+          await getProvider().getBalance(
+            "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
           )
         ).toString()
       );
@@ -50,11 +64,24 @@ export default function HomePage() {
           )
         ).toString()
       );
+      if (e < 2500) {
+        await contractCryptoMarket.receiver({
+          value: ethers.utils.parseEther("2500"),
+        });
+      }
+      e = ethers.utils.formatEther(
+        (
+          await getProvider().getBalance(
+            "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+          )
+        ).toString()
+      );
       setContract([
         contractChannelLogic,
         contractUser1,
         contractUser2,
         contractExampleBorrower,
+        contractCryptoMarket,
       ]);
     }
     init();
