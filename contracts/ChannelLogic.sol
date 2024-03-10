@@ -235,7 +235,7 @@ contract ChannelLogic {
         require(!channel.control.closed, "Channel has already been closed, use withdraw instead");
 
         //Check whether the sum of the balances in the final state matches the sum of the balances in the control struct
-        require(finalState.balance_A + finalState.balance_B == channel.control.sum_of_balances, "The sum of the balances does not match the sum of the balances in the control struct");
+        require(finalState.balance_A + finalState.balance_B <= channel.control.sum_of_balances, "You are trying to pay out more than the sum of the balances in the channel");
 
         // update the final state (needed in withdraw)
         channel.state = finalState;
