@@ -1,5 +1,5 @@
 {
-  "name": "hardtest",
+  "name": "hardhat-server",
   "version": "1.0.0",
   "description": "Stelle sicher, dass Node.js und npm auf dem System installiert ist. Wenn nicht, lade es auf der offiziellen [Node.js-Website](https://nodejs.org/) herunter und installiere es.",
   "main": "index.js",
