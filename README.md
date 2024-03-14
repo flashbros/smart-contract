@@ -1,4 +1,4 @@
-# flash-loans
+# Smart-Contract
 
 ## Voraussetzungen
 
@@ -24,4 +24,16 @@ Dieser Befehl übersetzt die Smart Contracts in ausführbaren Code für die Ethe
 Die geschriebenen Tests liegen im test/-Verzeichnis und werden mit diesem Befehl ausgeführt:
 ```bash
 npm hardhat test
+```
+
+### Node starten
+Starte die lokale Hardhat-Node mit dem Befehl:
+```bash
+npm hardhat node
+```
+
+### Contracts deployen
+Deploye die Contracts in die lokale Hardhat-Node:
+```bash
+npm run "Deploy Contracts"
 ```
